@@ -1,0 +1,14 @@
+
+#git
+.git/
+
+# pycharm files
+*.xml
+.idea/
+
+# backup files
+*~
+*.swp
+*.swo
+*.pyc
+
