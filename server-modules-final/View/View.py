@@ -21,6 +21,8 @@ import dash_bootstrap_components as dbc
 from dash import html
 from dash import dcc
 from dash import no_update
+import dash_daq as daq
+
 from dash.dependencies import Input, Output, State
 # import dash_cytoscape as cyto
 import plotly.graph_objects as go
@@ -77,8 +79,9 @@ class ViewGui:
         logDistributed = collections.deque(maxlen=20)
 
 
-        self.slider_legacy_device_num = 2
-        self.slider_E2L_device_num = 2
+        self.ed_1_gw_selection = 1
+        self.ed_2_gw_selection = 1
+        self.ed_3_gw_selection = 1
         self.dropdown_process_function = "mean"
         self.dropdown_process_window = 40
 
@@ -89,13 +92,17 @@ class ViewGui:
 
         # self.G = nx.random_geometric_graph(8, 0.125)
 
-        nodes = np.array(['ED1', 'ED2', 'ED3', 'ED4', 'ED5', 'Legacy_GW', 'E2L_GW', 'DS'])
-        pos = np.array([[1, 1], [1, 2], [1, 3], [1, 4], [1, 5],
+        nodes = np.array(['ED_1', 'ED_2', 'E2D_1', 'E2D_2', 'E2D_3', 'E2L_GW_2', 'E2L_GW_1', 'NS', 'DS'])
+        pos = np.array([[1, 5], [1, 4], [1, 3], [1, 2], [1, 1],
                         [3, 2], [3, 4],
-                        [5,3]])
-        edges = np.array([['ED1', 'Legacy_GW'], ['ED2', 'Legacy_GW'],
-                          ['ED3', 'E2L_GW'], ['ED4', 'E2L_GW'], ['ED5', 'E2L_GW'],
-                          ['Legacy_GW', 'DS'], ['E2L_GW', 'DS'], ])
+                        [5,3],
+                        [7,3]])
+        edges = np.array([['ED_1', 'E2L_GW_1'], ['ED_2', 'E2L_GW_1'],
+                          ['E2D_1', 'E2L_GW_1'], ['E2D_2', 'E2L_GW_1'], ['E2D_3', 'E2L_GW_1'],
+                          ['ED_1', 'E2L_GW_2'], ['ED_2', 'E2L_GW_2'],
+                          ['E2D_1', 'E2L_GW_2'], ['E2D_2', 'E2L_GW_2'], ['E2D_3', 'E2L_GW_2'],
+                          ['E2L_GW_1', 'NS'], ['E2L_GW_2', 'NS'],
+                          ['NS', 'DS'] ])
         self.G = nx.Graph()
         # print("1: ", self.G.nodes())
         # IG = InteractiveGraph(G) #>>>>> add this line in the next step
@@ -164,253 +171,269 @@ class ViewGui:
             style={"margin-bottom": "25px"},
         )
 
-        content_pkt_stats = html.Div([
-            # LORA EVENTS TIMING VISUALIZER
-            dcc.Interval(
-                id='interval-component',
-                interval=1000000,
-                n_intervals=0
-            ),
-            # dcc.Interval(
-            #     id='interval-component-HR',
-            #     interval=30*1000,
-            #     n_intervals=0
-            # ),
-            # dcc.Interval(
-            #     id='interval-component-Lid',
-            #     interval = 1000,
-            #     n_intervals=0
-            # ),
-            html.Div([
-                #FIRST SUB-ROW: POWER INTERFACE, regulate TX POWER GAIN
+        # content_pkt_stats = html.Div([
+        #     # LORA EVENTS TIMING VISUALIZER
+        #     dcc.Interval(
+        #         id='interval-component',
+        #         interval=1000000,
+        #         n_intervals=0
+        #     ),
+        #     # dcc.Interval(
+        #     #     id='interval-component-HR',
+        #     #     interval=30*1000,
+        #     #     n_intervals=0
+        #     # ),
+        #     # dcc.Interval(
+        #     #     id='interval-component-Lid',
+        #     #     interval = 1000,
+        #     #     n_intervals=0
+        #     # ),
+        #     html.Div([
+        #         #FIRST SUB-ROW: POWER INTERFACE, regulate TX POWER GAIN
+        #
+        #         #SECOND SUB-ROW: show current value of RSSI and DR
+        #         # html.Div([
+        #         #     html.Div("RSSI",className="pretty_container five columns"),
+        #         #     html.Div("DR",className="pretty_container six columns")
+        #         # ]),
+        #         #THIRD SUB-ROW: show LIDAR data
+        #         # LIDAR POLAR PLOT
+        #         # SCENARIO CONFIGURATION
+        #         html.Div(
+        #             [html.H6("SCENARIO CONFIGURATION", className="graph__title"),
+        #
+        #              html.Label('Select the legacy device number'),
+        #              dcc.Slider(0, 5, 1, value=self.slider_legacy_device_num, id='legacy-device-num'),
+        #              html.Div(id='slider-output-1'),
+        #
+        #              html.Label('Select the E2L device number'),
+        #              dcc.Slider(0, 5, 1, value=self.slider_E2L_device_num, id='E2L-device-num'),
+        #              html.Div(id='slider-output-2'),
+        #
+        #              html.Button('Update configuration', id='updateScenarioConfigurationButton', style={'text-align': 'center', 'vertical-align': 'middle', }),
+        #              html.Div(id='updateScenarioConfigurationDiv'),
+        #
+        #              # html.Div(id='output-container-button-app12', children='',
+        #                       #  style={'width': '20%', 'hight':'40', 'backgroundColor':'#F7FBFE', 'marginLeft': 10, 'marginRight': 10, 'marginTop': 10, 'marginBottom': 10,
+        #                       # 'border': 'thin lightgrey dashed', 'padding': '10px 10px 10px 10px', 'display': 'inline-block', 'vertical-align': 'top'}
+        #                       # ),
+        #
+        #              ],
+        #             className="pretty_container seven columns",
+        #             style={'width': '20%', 'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
+        #                    'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}
+        #         ),
+        #
+        #         # html.Div([
+        #         #     dcc.Graph(id='devices-space-own-app12'),
+        #         # ], id='devices-space-own-app12-div',
+        #         #     style={'width': '45%', 'backgroundColor': '#FFFFFF', 'marginLeft': 10, 'marginRight': 10, 'marginTop': 10,
+        #         #            'marginBottom': 10, 'border': 'thin lightgrey dashed', 'padding': '6px 0px 0px 8px',
+        #         #            'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}),
+        #         #
+        #         # html.Div([
+        #         #     dcc.Graph(id='devices-space-alien-app12'),
+        #         # ], id='devices-space-alien-app12-div',
+        #         #     style={'width': '45%', 'backgroundColor': '#FFFFFF', 'marginLeft': 10, 'marginRight': 10, 'marginTop': 10,
+        #         #            'marginBottom': 10, 'border': 'thin lightgrey dashed', 'padding': '6px 0px 0px 8px',
+        #         #            'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}),
+        #
+        #         html.Div(
+        #             [
+        #                  html.H6("STREAM PROCESSING CONFIGURATION", className="graph__title"),
+        #                  # dcc.Graph(id='HR-graph', animate=False, style={"height":300}, config={'displayModeBar': False}),
+        #
+        #                 html.Label('Select the aggregation function'),
+        #                 dcc.Dropdown(
+        #                 id='processing-function-dropdown',
+        #                 options=[
+        #                     {'label': '{}'.format(self.processingFunctions[index]),
+        #                      'value': '{}'.format(self.processingFunctions[index])} for index in range(len(self.processingFunctions) - 1)
+        #                 ],
+        #                 value=self.processingFunctions[0]
+        #                 ),
+        #
+        #                 html.Label('Select the windows size'),
+        #                 dcc.Dropdown(
+        #                     id='processing-window-dropdown',
+        #                     options=[
+        #                         {'label': '{}'.format(self.processingWindows[index]),
+        #                          'value': '{}'.format(self.processingWindows[index])} for index in range(len(self.processingWindows) - 1)
+        #                     ],
+        #                     value=self.processingWindows[0]
+        #                 ),
+        #
+        #                 html.Button('Update configuration', id='updateProcessingConfigurationButton', style={'text-align': 'center', 'vertical-align': 'middle', }),
+        #                 html.Div(id='updateProcessingConfigurationDiv'),
+        #
+        #             ],
+        #             className="pretty_container two columns",
+        #             style={'width': '16%', 'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
+        #                    'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}
+        #         ),
+        #     ], className="row flex-display",
+        #         style={'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
+        #                "background-color": "#f8f9fa"}
+        #
+        #     ),
 
-                #SECOND SUB-ROW: show current value of RSSI and DR
-                # html.Div([
-                #     html.Div("RSSI",className="pretty_container five columns"),
-                #     html.Div("DR",className="pretty_container six columns")
-                # ]),
-                #THIRD SUB-ROW: show LIDAR data
-                # LIDAR POLAR PLOT
-                # SCENARIO CONFIGURATION
-                html.Div(
-                    [html.H6("SCENARIO CONFIGURATION", className="graph__title"),
-
-                     html.Label('Select the legacy device number'),
-                     dcc.Slider(0, 5, 1, value=self.slider_legacy_device_num, id='legacy-device-num'),
-                     html.Div(id='slider-output-1'),
-
-                     html.Label('Select the E2L device number'),
-                     dcc.Slider(0, 5, 1, value=self.slider_E2L_device_num, id='E2L-device-num'),
-                     html.Div(id='slider-output-2'),
-
-                     html.Button('Update configuration', id='updateScenarioConfigurationButton', style={'text-align': 'center', 'vertical-align': 'middle', }),
-                     html.Div(id='updateScenarioConfigurationDiv'),
-
-                     # html.Div(id='output-container-button-app12', children='',
-                              #  style={'width': '20%', 'hight':'40', 'backgroundColor':'#F7FBFE', 'marginLeft': 10, 'marginRight': 10, 'marginTop': 10, 'marginBottom': 10,
-                              # 'border': 'thin lightgrey dashed', 'padding': '10px 10px 10px 10px', 'display': 'inline-block', 'vertical-align': 'top'}
-                              # ),
-
-                     ],
-                    className="pretty_container seven columns",
-                    style={'width': '20%', 'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
-                           'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}
-                ),
-
-                # html.Div([
-                #     dcc.Graph(id='devices-space-own-app12'),
-                # ], id='devices-space-own-app12-div',
-                #     style={'width': '45%', 'backgroundColor': '#FFFFFF', 'marginLeft': 10, 'marginRight': 10, 'marginTop': 10,
-                #            'marginBottom': 10, 'border': 'thin lightgrey dashed', 'padding': '6px 0px 0px 8px',
-                #            'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}),
-                #
-                # html.Div([
-                #     dcc.Graph(id='devices-space-alien-app12'),
-                # ], id='devices-space-alien-app12-div',
-                #     style={'width': '45%', 'backgroundColor': '#FFFFFF', 'marginLeft': 10, 'marginRight': 10, 'marginTop': 10,
-                #            'marginBottom': 10, 'border': 'thin lightgrey dashed', 'padding': '6px 0px 0px 8px',
-                #            'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}),
-
-                html.Div(
-                    [
-                         html.H6("STREAM PROCESSING CONFIGURATION", className="graph__title"),
-                         # dcc.Graph(id='HR-graph', animate=False, style={"height":300}, config={'displayModeBar': False}),
-
-                        html.Label('Select the aggregation function'),
-                        dcc.Dropdown(
-                        id='processing-function-dropdown',
-                        options=[
-                            {'label': '{}'.format(self.processingFunctions[index]),
-                             'value': '{}'.format(self.processingFunctions[index])} for index in range(len(self.processingFunctions) - 1)
-                        ],
-                        value=self.processingFunctions[0]
-                        ),
-
-                        html.Label('Select the windows size'),
-                        dcc.Dropdown(
-                            id='processing-window-dropdown',
-                            options=[
-                                {'label': '{}'.format(self.processingWindows[index]),
-                                 'value': '{}'.format(self.processingWindows[index])} for index in range(len(self.processingWindows) - 1)
-                            ],
-                            value=self.processingWindows[0]
-                        ),
-
-                        html.Button('Update configuration', id='updateProcessingConfigurationButton', style={'text-align': 'center', 'vertical-align': 'middle', }),
-                        html.Div(id='updateProcessingConfigurationDiv'),
-
-                    ],
-                    className="pretty_container two columns",
-                    style={'width': '16%', 'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
-                           'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}
-                ),
-            ], className="row flex-display",
-                style={'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
-                       "background-color": "#f8f9fa"}
-
-            ),
-
-            # LOG MESSAGE CONSOLE
-            html.Div(
-                [
-                html.Div(
-                    [
-                        html.Div([
-                            html.H6("Devices key agreement log message", className="log_container_devices"),
-                            html.Div(id="textarea-log-devices", children=[],
-                                     style={"overflow": "scroll", 'height': 250, "background-color": "#f8f9fa"},
-                                     )]
-                            , className="pretty_container"),
-
-                    ],
-                    className="pretty_container two columns",
-                    style={'width': '20%', 'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
-                           'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}
-                ),
-                html.Div(
-                    [
-                        html.Div([
-                            html.H6("Gateways key agreement log message", className="log_container_gateways"),
-                            html.Div(id="textarea-log-gateways", children=[],
-                                     style={"overflow": "scroll", 'height': 250, "background-color": "#f8f9fa"},
-                                     )], className="pretty_container"),
-                    ],
-                    className="pretty_container two columns",
-                    style={'width': '20%', 'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
-                           'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}
-                ),
-                html.Div(
-                    [
-                        html.Div([
-                            html.H6("Distributed key agreement log message", className="log_container_gateways"),
-                            html.Div(id="textarea-log-distributed", children=[],
-                                     style={"overflow": "scroll", 'height': 250, "background-color": "#f8f9fa"},
-                                     )], className="pretty_container"),
-                    ],
-                    className="pretty_container two columns",
-                    style={'width': '20%', 'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
-                           'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}
-                ),
-
-            ], className="row flex-display",
-                style={'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
-                       "background-color": "#f8f9fa"}
-
-            ), # className="row flex-display"), #className="twelve columns"),
-
-            html.Div( [
-                html.Div([
-                    html.P("Lora network topology:"),
-                    # dcc.Graph(id="lora-network-topology", animate=False, style={"height": 650}, config={'displayModeBar': False}),
-                    dcc.Graph(id="lora-network-topology", animate=True),
-                ], className="pretty_container five columns",
-                ),
-
-                html.Div( [
-                    html.H6("LoRa Traffic", className="graph_title"),
-                    dcc.Graph(id="lora-traffic-graph", animate=True),
-                ], className="pretty_container six columns",
-                # style={'width': '20%', 'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
-                #        'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}
-
-                ),
-
-                ],
-                className="pretty_container twelve columns",
-            ),
-
-            html.Div( [
-                    # dcc.Dropdown(
-                    #     id='dropdown-scenario-spazio-radio',
-                    #     options=[
-                    #         {'label': 'CC00', 'value': 'CC00'},
-                    #         {'label': 'PR00', 'value': 'PR00'},
-                    #         {'label': 'Simul', 'value': 'Simul'},
-                    #     ],
-                    #     value='CC00'
-                    # ),
-                    # dcc.Dropdown(
-                    #     id='dropdown-scenario-period',
-                    #     options=[
-                    #         {'label': 'Period 1 (2019-10-21)', 'value': '2019-10-21'},
-                    #         {'label': 'Period 2 (2019-09-23)', 'value': '2019-09-23'},
-                    #         {'label': 'Period 3 (2019-08-11)', 'value': '2019-08-12'},
-                    #         {'label': 'Period 4 (2019-05-12)', 'value': '2019-05-13'},
-                    #     ],
-                    #     value='2019-10-21'
-                    # ),
-
-                    dcc.ConfirmDialog(id='confirm-dialog-app8', message='Please wait for complete!', ),
-                    dcc.Store(id="session", storage_type="session"),
-                    dcc.Dropdown(
-                        id="dropdown-1",
-                        options=[
-                            {"label": "a", "value": "a"},
-                            {"label": "b", "value": "b"},
-                            {"label": "c", "value": "c"},
-                        ],
-                        placeholder="Choose a value",
-                        value=None,
-                    ),
-                    dcc.Dropdown(
-                        id="dropdown-2",
-                        options=[
-                            {"label": "d", "value": "d"},
-                            {"label": "e", "value": "e"},
-                            {"label": "f", "value": "f"},
-                        ],
-                        placeholder="Choose a value",
-                        value=None,
-                    ),
-                    html.Div(id="textarea-1", children=[]),
-                ], className="pretty_container twelve columns",
-            ),
-
-        ], # className="row flex-display",
-        )
+        #     # LOG MESSAGE CONSOLE
+        #     html.Div(
+        #         [
+        #         html.Div(
+        #             [
+        #                 html.Div([
+        #                     html.H6("Devices key agreement log message", className="log_container_devices"),
+        #                     html.Div(id="textarea-log-devices", children=[],
+        #                              style={"overflow": "scroll", 'height': 250, "background-color": "#f8f9fa"},
+        #                              )]
+        #                     , className="pretty_container"),
+        #
+        #             ],
+        #             className="pretty_container two columns",
+        #             style={'width': '20%', 'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
+        #                    'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}
+        #         ),
+        #         html.Div(
+        #             [
+        #                 html.Div([
+        #                     html.H6("Gateways key agreement log message", className="log_container_gateways"),
+        #                     html.Div(id="textarea-log-gateways", children=[],
+        #                              style={"overflow": "scroll", 'height': 250, "background-color": "#f8f9fa"},
+        #                              )], className="pretty_container"),
+        #             ],
+        #             className="pretty_container two columns",
+        #             style={'width': '20%', 'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
+        #                    'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}
+        #         ),
+        #         html.Div(
+        #             [
+        #                 html.Div([
+        #                     html.H6("Distributed key agreement log message", className="log_container_gateways"),
+        #                     html.Div(id="textarea-log-distributed", children=[],
+        #                              style={"overflow": "scroll", 'height': 250, "background-color": "#f8f9fa"},
+        #                              )], className="pretty_container"),
+        #             ],
+        #             className="pretty_container two columns",
+        #             style={'width': '20%', 'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
+        #                    'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}
+        #         ),
+        #
+        #     ], className="row flex-display",
+        #         style={'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
+        #                "background-color": "#f8f9fa"}
+        #
+        #     ), # className="row flex-display"), #className="twelve columns"),
+        #
+        #     html.Div( [
+        #         html.Div([
+        #             html.P("Lora network topology:"),
+        #             # dcc.Graph(id="lora-network-topology", animate=False, style={"height": 650}, config={'displayModeBar': False}),
+        #             dcc.Graph(id="lora-network-topology", animate=True),
+        #         ], className="pretty_container five columns",
+        #         ),
+        #
+        #         html.Div( [
+        #             html.H6("LoRa Traffic", className="graph_title"),
+        #             dcc.Graph(id="lora-traffic-graph", animate=True),
+        #         ], className="pretty_container six columns",
+        #         # style={'width': '20%', 'marginLeft': 2, 'marginRight': 2, 'marginTop': 2, 'marginBottom': 2, 'padding': '8px 8px 8px 8px',
+        #         #        'vertical-align': 'top', 'display': 'inline-block', 'text-align': 'center'}
+        #
+        #         ),
+        #
+        #         ],
+        #         className="pretty_container twelve columns",
+        #     ),
+        #
+        #     html.Div( [
+        #             # dcc.Dropdown(
+        #             #     id='dropdown-scenario-spazio-radio',
+        #             #     options=[
+        #             #         {'label': 'CC00', 'value': 'CC00'},
+        #             #         {'label': 'PR00', 'value': 'PR00'},
+        #             #         {'label': 'Simul', 'value': 'Simul'},
+        #             #     ],
+        #             #     value='CC00'
+        #             # ),
+        #             # dcc.Dropdown(
+        #             #     id='dropdown-scenario-period',
+        #             #     options=[
+        #             #         {'label': 'Period 1 (2019-10-21)', 'value': '2019-10-21'},
+        #             #         {'label': 'Period 2 (2019-09-23)', 'value': '2019-09-23'},
+        #             #         {'label': 'Period 3 (2019-08-11)', 'value': '2019-08-12'},
+        #             #         {'label': 'Period 4 (2019-05-12)', 'value': '2019-05-13'},
+        #             #     ],
+        #             #     value='2019-10-21'
+        #             # ),
+        #
+        #             dcc.ConfirmDialog(id='confirm-dialog-app8', message='Please wait for complete!', ),
+        #             dcc.Store(id="session", storage_type="session"),
+        #             dcc.Dropdown(
+        #                 id="dropdown-1",
+        #                 options=[
+        #                     {"label": "a", "value": "a"},
+        #                     {"label": "b", "value": "b"},
+        #                     {"label": "c", "value": "c"},
+        #                 ],
+        #                 placeholder="Choose a value",
+        #                 value=None,
+        #             ),
+        #             dcc.Dropdown(
+        #                 id="dropdown-2",
+        #                 options=[
+        #                     {"label": "d", "value": "d"},
+        #                     {"label": "e", "value": "e"},
+        #                     {"label": "f", "value": "f"},
+        #                 ],
+        #                 placeholder="Choose a value",
+        #                 value=None,
+        #             ),
+        #             html.Div(id="textarea-1", children=[]),
+        #         ], className="pretty_container twelve columns",
+        #     ),
+        #
+        # ], # className="row flex-display",
+        # )
 
         sidebar = html.Div(
             [
+
                 dbc.Row(
                     [
-                        html.H5('Settings', style={'margin-top': '12px', 'margin-left': '24px'})
+                        html.H6('Settings', style={'margin-top': '12px', 'margin-left': '24px'})
                     ],
-                    style={"height": "5vh"},
+                    style={"height": "5vh", 'margin': '8px'},
                     className='bg-primary text-white font-italic'
                 ),
+
                 dbc.Row(
                     [
                         html.Div([
                             html.P('SCENARIO CONFIGURATION', style={'margin-top': '18px', 'margin-bottom': '4px'}, className='font-weight-bold'),
                             # html.H6("SCENARIO CONFIGURATION", className="graph__title"),
 
-                            html.Label('Select the legacy device number'),
-                            dcc.Slider(0, 5, 1, value=self.slider_legacy_device_num, id='legacy-device-num'),
+                            html.Label('Edge2LoRa ED 1 GW selection'),
+                            dcc.Slider(1, 2, 1, value=self.ed_1_gw_selection, id='ed-1-gw-selection'),
                             html.Div(id='slider-output-1'),
 
-                            html.Label('Select the E2L device number'),
-                            dcc.Slider(0, 5, 1, value=self.slider_E2L_device_num, id='E2L-device-num'),
+                            html.Div([
+                                html.Div(id='boolean-slider-output-1')
+                            ]),
+
+                            html.Label('Edge2LoRa ED 2 GW selection'),
+                            dcc.Slider(1, 2, 1, value=self.ed_2_gw_selection, id='ed-2-gw-selection'),
                             html.Div(id='slider-output-2'),
+                            html.Div([
+                                html.Div(id='boolean-slider-output-2')
+                            ]),
+
+                            html.Label('Edge2LoRa ED 3 GW selection'),
+                            html.Div([
+                                dcc.Slider(1, 2, 1, value=self.ed_3_gw_selection, id='ed-3-gw-selection'),
+                                html.Div(id='boolean-slider-output-3')
+                            ]),
+
 
                             html.Button('Update configuration', id='updateScenarioConfigurationButton',  n_clicks=0,
                                         style={'margin-top': '16px'},
@@ -504,21 +527,21 @@ class ViewGui:
                     [
                         dbc.Col(
                             [
-                                html.H6("Devices key agreement log message", className="log_container_devices"),
+                                html.H6("GW 1 log message", className="log_container_devices"),
                                 html.Div(id="textarea-log-devices", children=[],
                                     style={"overflow": "scroll", 'height': 180, "background-color": "#f8f9fa"},
                                     ),
                             ]),
                         dbc.Col(
                             [
-                                html.H6("Gateways key agreement log message", className="log_container_gateways"),
+                                html.H6("GW 2 log message", className="log_container_gateways"),
                                 html.Div(id="textarea-log-gateways", children=[],
                                      style={"overflow": "scroll", 'height': 180, "background-color": "#f8f9fa"},
                                      ),
                             ]),
                         dbc.Col(
                             [
-                                html.H6("Distributed key agreement log message", className="log_container_gateways"),
+                                html.H6("Edge2LoRa ED log message", className="log_container_gateways"),
                                 html.Div(id="textarea-log-distributed", children=[],
                                      style={"overflow": "scroll", 'height': 180, "background-color": "#f8f9fa"},
                                      ),
@@ -530,23 +553,25 @@ class ViewGui:
 
         self.app.layout = dbc.Container(
             [
-                dcc.Interval( id='interval-component', interval=1000, n_intervals=0 ),
+                dcc.Interval( id='interval-component', interval=1000000, n_intervals=0 ),
                 dbc.Row(
                     [
-                        dbc.Col(header, width=12, className='bg-light'),
+                        dbc.Col(header, width=0, className='bg-light'),
                     ],
-                    style={"height": "10vh"}
+                    style={"height": "10vh", }
                 ),
 
                 dbc.Row(
                     [
-                        dbc.Col(sidebar, width=2, className='bg-light'),
+                        dbc.Col(sidebar, width=0, className='bg-light'),
                         dbc.Col(content, width=10, className='bg-white')
                     ],
-                    style={"height": "90vh"}
+                    style={"height": "90vh", 'margin': '18px'}
                 ),
             ],
-            fluid=True
+            fluid=True,
+            className='bg-white',
+            style = {'margin-top': '-10px', 'margin-left':'-5px'}
         )
 
         # self.app.layout = html.Div(
@@ -680,6 +705,7 @@ class ViewGui:
                 ####EDGE####
                 edge_x = []
                 edge_y = []
+                # print(self.G.edges())
                 for edge in self.G.edges():
                     x0, y0 = self.G.nodes[edge[0]]['pos']
                     x1, y1 = self.G.nodes[edge[1]]['pos']
@@ -690,14 +716,31 @@ class ViewGui:
                     edge_y.append(y1)
                     edge_y.append(None)
 
-                edge_trace = go.Scatter(
-                    x=edge_x, y=edge_y,
-                    line=dict(width=0.8, color='#888'),
-                    hoverinfo='none',
-                    mode='lines')
+                # print(edge_x)
+                # print(edge_y)
 
-                node_trace = go.Scatter(
-                    x=node_x, y=node_y,
+
+                edge_trace_E2LE = go.Scatter(
+                    x=edge_x, y=edge_y,
+                    name="Wireless link",
+                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
+                    line=dict(color='firebrick', width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
+
+                edge_trace_E2LO = go.Scatter(
+                    x=edge_x, y=edge_y,
+                    # name="Edge link",
+                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
+                    line=dict(color='firebrick', width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
+
+                edge_trace_CLOUD = go.Scatter(
+                    x=edge_x, y=edge_y,
+                    # name="Cloud",
+                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
+                    line=dict(color='firebrick', width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
+
+                node_trace_ED_legacy = go.Scatter(
+                    x=node_x[:2], y=node_y[:2],
+                    name='Legacy ED',
                     mode='markers',
                     hoverinfo='text',
                     marker=dict(
@@ -708,7 +751,107 @@ class ViewGui:
                         # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
                         colorscale='YlGnBu',
                         reversescale=True,
-                        color=[],
+                        color='LightSkyBlue',
+                        size=40,
+                        colorbar=dict(
+                            thickness=15,
+                            title='Node Connections',
+                            xanchor='left',
+                            titleside='right'
+                        ),
+                        line=dict( color='MediumPurple', width=3, ),
+                        symbol="circle",
+                        ))
+
+                node_trace_EDL = go.Scatter(
+                    x=node_x[2:5], y=node_y[2:5],
+                    mode='markers',
+                    name='E2L ED',
+                    hoverinfo='text',
+                    marker=dict(
+                        showscale=False,
+                        # colorscale options
+                        # 'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
+                        # 'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
+                        # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
+                        colorscale='YlGnBu',
+                        reversescale=False,
+                        color='LightSkyBlue',
+                        size=40,
+                        colorbar=dict(
+                            thickness=15,
+                            title='Node Connections',
+                            xanchor='left',
+                            titleside='right'
+                        ),
+                        symbol="star",
+                        line=dict( color='MediumPurple', width=3, ),
+                    ))
+
+                node_trace_GW = go.Scatter(
+                    x=node_x[5:7], y=node_y[5:7],
+                    mode='markers',
+                    name='E2L GW',
+                    hoverinfo='text',
+                    marker=dict(
+                        showscale=False,
+                        # colorscale options
+                        # 'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
+                        # 'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
+                        # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
+                        colorscale='YlGnBu',
+                        reversescale=True,
+                        color='LightSkyBlue',
+                        size=40,
+                        colorbar=dict(
+                            thickness=15,
+                            title='Node Connections',
+                            xanchor='left',
+                            titleside='right'
+                        ),
+                        symbol="star-triangle-up",
+                        line=dict(color='MediumPurple', width=3, ),
+                    ))
+
+                node_trace_NS = go.Scatter(
+                    x=node_x[7:8], y=node_y[7:8],
+                    mode='markers',
+                    name='NS',
+                    hoverinfo='text',
+                    marker=dict(
+                        showscale=False,
+                        # colorscale options
+                        # 'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
+                        # 'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
+                        # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
+                        colorscale='YlGnBu',
+                        reversescale=True,
+                        color='LightSkyBlue',
+                        size=40,
+                        colorbar=dict(
+                            thickness=15,
+                            title='Node Connections',
+                            xanchor='left',
+                            titleside='right'
+                        ),
+                        symbol="square",
+                        line=dict(color='MediumPurple', width=3, ),
+                    ))
+
+                node_trace_DS = go.Scatter(
+                    x=node_x[8:9], y=node_y[8:9],
+                    mode='markers',
+                    name='DS',
+                    hoverinfo='text',
+                    marker=dict(
+                        showscale=False,
+                        # colorscale options
+                        # 'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
+                        # 'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
+                        # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
+                        colorscale='Viridis',
+                        reversescale=False,
+                        color='LightSkyBlue',
                         size=40,
                         colorbar=dict(
                             thickness=15,
@@ -717,25 +860,32 @@ class ViewGui:
                             titleside='right'
                         ),
                         symbol="diamond",
-                        line_width=5))
+                        line=dict(color='MediumPurple', width=3, ),
+                    ))
 
                 node_adjacencies = []
                 node_text = []
                 for node, adjacencies in enumerate(self.G.adjacency()):
-                    node_adjacencies.append(len(adjacencies[1]))
+                    # node_adjacencies.append(len(adjacencies[1]))
                     node_text.append('# of connections: ' + str(len(adjacencies[1])))
 
-                node_trace.marker.color = node_adjacencies
-                node_trace.text = node_text
+                # node_trace_EDL.marker.color = node_adjacencies
+                node_trace_EDL.text = node_text
 
-                fig = go.Figure(data=[edge_trace, node_trace],
+                fig = go.Figure(data=[edge_trace_E2LE, edge_trace_E2LO, edge_trace_CLOUD, node_trace_ED_legacy, node_trace_EDL, node_trace_GW, node_trace_NS, node_trace_DS],
                                 layout=go.Layout(
-                                    showlegend=False,
+                                    showlegend=True,
                                     hovermode='closest',
                                     margin=dict(b=20, l=5, r=5, t=40),
-                                    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                                    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+                                    xaxis=dict(showgrid=True, zeroline=False, showticklabels=False),
+                                    yaxis=dict(showgrid=True, zeroline=False, showticklabels=False))
                                 )
+
+                fig.update_layout(
+                    legend=dict( x=0.2, y=0.99, traceorder="normal", font=dict( family="sans-serif", size=12, color="blue" ), orientation='h',)
+                    # legend=dict(yanchor="top", y=0.01, xanchor="left", x=0.01 )
+                )
+
                 return fig
 
             except Exception as e:
@@ -760,43 +910,58 @@ class ViewGui:
                 # print(list(controllerGRPC.legacy_gw_received_frame_num))
                 # print(list(controllerGRPC.E2L_gw_received_frame_num))
 
-                legacy_gw_received_frame_num_list = list(controllerGRPC.legacy_gw_received_frame_num)
-                legacy_gw_received_frame_unique_num_list = list(controllerGRPC.legacy_gw_received_frame_unique_num)
-                legacy_gw_transmitted_frame_num_list = list(controllerGRPC.legacy_gw_transmitted_frame_num)
+                # self.controllerGRPC.gw_1_received_frame_num.append(request.gw_1_received_frame_num)
+                # self.controllerGRPC.gw_1_transmitted_frame_num.append(request.gw_1_transmitted_frame_num)
+                # self.controllerGRPC.gw_2_received_frame_num.append(request.gw_2_received_frame_num)
+                # self.controllerGRPC.gw_2_transmitted_frame_num.append(request.gw_2_transmitted_frame_num)
 
-                timetsamp_list = list(range(len(legacy_gw_received_frame_num_list)))
+                gw_1_received_frame_num = list(controllerGRPC.gw_1_received_frame_num)
+                gw_1_transmitted_frame_num = list(controllerGRPC.gw_1_transmitted_frame_num)
+                gw_2_received_frame_num = list(controllerGRPC.gw_2_received_frame_num)
+                gw_2_transmitted_frame_num = list(controllerGRPC.gw_2_transmitted_frame_num)
 
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=legacy_gw_received_frame_num_list,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[0]), name="received_frame"
+                timetsamp_list = list(range(len(gw_1_received_frame_num)))
+
+                fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_1_received_frame_num,
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[0]), name="RX_GW1"
                                          ), row=1, col=1,
                               )
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=legacy_gw_received_frame_unique_num_list,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[1]), name="received_frame_unique"
+                fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_1_transmitted_frame_num,
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[1]), name="TX_GW1"
                                          ), row=1, col=1,
                               )
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=legacy_gw_received_frame_num_list,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[2]), name="transmitted_frame"
+                fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_2_received_frame_num,
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[2]), name="RX_GW2"
+                                         ), row=1, col=1,
+                              )
+                fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_2_transmitted_frame_num,
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[3]), name="TX_GW2"
                                          ), row=1, col=1,
                               )
 
-                E2L_gw_received_frame_num_list = list(controllerGRPC.E2L_gw_received_frame_num)
-                E2L_gw_received_frame_unique_list = list(controllerGRPC.E2L_gw_received_frame_unique_num)
-                E2L_gw_transmitted_frame_num_list = list(controllerGRPC.E2L_gw_transmitted_frame_num)
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=E2L_gw_received_frame_num_list,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[0]), name="received_frame"
+                # self.controllerGRPC.ns_received_frame_frame_num.append(request.ns_received_frame_frame_num)
+                # self.controllerGRPC.ns_transmitted_frame_frame_num.append(request.ns_transmitted_frame_frame_num)
+                # self.controllerGRPC.module_received_frame_frame_num.append(request.module_received_frame_frame_num)
+                # self.controllerGRPC.aggregation_function_result.append(request.aggregation_function_result)
+
+                ns_received_frame_frame_num = list(controllerGRPC.ns_received_frame_frame_num)
+                ns_transmitted_frame_frame_num = list(controllerGRPC.ns_transmitted_frame_frame_num)
+                module_received_frame_frame_num = list(controllerGRPC.module_received_frame_frame_num)
+                fig.add_trace(go.Scatter(x=timetsamp_list, y=ns_received_frame_frame_num,
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[0]), name="RX_NS"
                                          ), row=2, col=1,
                               )
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=E2L_gw_received_frame_unique_list,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[1]), name="received_frame_unique"
+                fig.add_trace(go.Scatter(x=timetsamp_list, y=ns_transmitted_frame_frame_num,
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[1]), name="TX_NS"
                                          ), row=2, col=1,
                               )
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=E2L_gw_transmitted_frame_num_list,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[2]), name="transmitted_frame"
+                fig.add_trace(go.Scatter(x=timetsamp_list, y=module_received_frame_frame_num,
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[2]), name="RX_DM"
                                          ), row=2, col=1,
                               )
 
-                fig.update_yaxes(row=1, col=1, title_text='Legacy GW Statistics')
-                fig.update_yaxes(row=2, col=1, title_text='Edge2Lora GW Statistics')
+                fig.update_yaxes(row=1, col=1, title_text='GW 1/2 Statistics')
+                fig.update_yaxes(row=2, col=1, title_text='NS/DM Statistics')
                 fig.update_layout( margin=dict(l=10, r=10, t=10, b=10), )
 
                 fig.update_layout(legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01 ))
@@ -806,6 +971,27 @@ class ViewGui:
             except Exception as e:
                 traceback.print_exc()
                 pass
+
+        @self.app.callback(
+            Output('boolean-slider-output-1', 'children'),
+            Input('ED1-boolean-switch', 'on')
+        )
+        def update_output(on):
+            return f'The switch is {on}.'
+
+        @self.app.callback(
+            Output('boolean-slider-output-2', 'children'),
+            Input('ED2-boolean-switch', 'on')
+        )
+        def update_output(on):
+            return f'The switch is {on}.'
+
+        @self.app.callback(
+            Output('boolean-slider-output-3', 'children'),
+            Input('ED3-boolean-switch', 'on')
+        )
+        def update_output(on):
+            return f'The switch is {on}.'
 
             # @self.app.callback( Output('textarea-log-devices', 'children'),
         #     Input('interval-component', 'n_intervals'),

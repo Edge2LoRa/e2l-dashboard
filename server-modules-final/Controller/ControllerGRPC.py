@@ -71,35 +71,31 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
     # 客户端流模式（在一次调用中, 客户端可以多次向服务器传输数据, 但是服务器只能返回一次响应）
     # stream-unary (In a single call, the client can transfer data to the server several times,
     # but the server can only return a response once.)
-    def ClientStreamingMethod(self, request_iterator, context):
+    def ClientStreamingMethodStatistics(self, request_iterator, context):
         print("ClientStreamingMethod called by client...")
 
         for request in request_iterator:
             print(
                 "recv from client(%d), message= %s"
-                % (request.client_id, request.request_data)
+                % (request.client_id, request.message_data)
             )
 
-            self.controllerGRPC.legacy_gw_received_frame_num.append(request.legacy_gw_received_frame_num)
-            self.controllerGRPC.legacy_gw_received_frame_unique_num.append(request.legacy_gw_received_frame_unique_num)
-            self.controllerGRPC.legacy_gw_transmitted_frame_num.append(request.legacy_gw_transmitted_frame_num)
-            self.controllerGRPC.E2L_gw_received_frame_num.append(request.E2L_gw_received_frame_num)
-            self.controllerGRPC.E2L_gw_received_frame_unique_num.append(request.E2L_gw_received_frame_unique_num)
-            self.controllerGRPC.E2L_gw_transmitted_frame_num.append(request.E2L_gw_transmitted_frame_num)
-            self.controllerGRPC.module_received_frame_from_ns_num.append(request.module_received_frame_from_ns_num)
-            self.controllerGRPC.module_received_frame_from_gw_num.append(request.module_received_frame_from_gw_num)
-            self.controllerGRPC.key_agreement_process_time.append(request.key_agreement_process_time)
+            self.controllerGRPC.gw_1_received_frame_num.append(request.gw_1_received_frame_num)
+            self.controllerGRPC.gw_1_transmitted_frame_num.append(request.gw_1_transmitted_frame_num)
+            self.controllerGRPC.gw_2_received_frame_num.append(request.gw_2_received_frame_num)
+            self.controllerGRPC.gw_2_transmitted_frame_num.append(request.gw_2_transmitted_frame_num)
+            self.controllerGRPC.ns_received_frame_frame_num.append(request.ns_received_frame_frame_num)
+            self.controllerGRPC.ns_transmitted_frame_frame_num.append(request.ns_transmitted_frame_frame_num)
+            self.controllerGRPC.module_received_frame_frame_num.append(request.module_received_frame_frame_num)
             self.controllerGRPC.aggregation_function_result.append(request.aggregation_function_result)
 
-            self.controllerGRPC.devices_key_agreement_message_log = request.devices_key_agreement_message_log
-            self.controllerGRPC.gw_key_agreement_message_log = request.gw_key_agreement_message_log
-            self.controllerGRPC.module_key_agreement_message_log = request.module_key_agreement_message_log
-
-        response = demo_pb2.Response(
+        response = demo_pb2.ReplyStatistics(
             server_id=SERVER_ID,
             response_data="Python server ClientStreamingMethod ok",
-            legacy_device_num = self.controllerGRPC.legacy_device_num,
-            E2L_device_num = self.controllerGRPC.E2L_device_num,
+            ed_1_gw_selection = self.controllerGRPC.ed_1_gw_selection,
+            ed_2_gw_selection = self.controllerGRPC.ed_2_gw_selection,
+            ed_3_gw_selection = self.controllerGRPC.ed_3_gw_selection,
+            start_key_agreement_process = self.controllerGRPC.start_key_agreement_process,
             process_function = self.controllerGRPC.process_function,
             process_window = self.controllerGRPC.process_window,
         )
@@ -170,46 +166,43 @@ class ControllerGRPC():
 
         self.client = None
 
-        self.legacy_device_num=2
-        self.E2L_device_num=2
+        self.ed_1_gw_selection = 1
+        self.ed_2_gw_selection = 1
+        self.ed_3_gw_selection = 1
         self.process_function="mean"
         self.process_window=10
+        self.start_key_agreement_process = 0
 
-        self.legacy_gw_received_frame_num = collections.deque(maxlen=20)
-        self.legacy_gw_received_frame_unique_num = collections.deque(maxlen=20)
-        self.legacy_gw_transmitted_frame_num = collections.deque(maxlen=20)
-        self.E2L_gw_received_frame_num = collections.deque(maxlen=20)
-        self.E2L_gw_received_frame_unique_num = collections.deque(maxlen=20)
-        self.E2L_gw_transmitted_frame_num = collections.deque(maxlen=20)
-        self.module_received_frame_from_ns_num = collections.deque(maxlen=20)
-        self.module_received_frame_from_gw_num = collections.deque(maxlen=20)
+        self.gw_1_received_frame_num = collections.deque(maxlen=20)
+        self.gw_1_transmitted_frame_num = collections.deque(maxlen=20)
+        self.gw_2_received_frame_num = collections.deque(maxlen=20)
+        self.gw_2_transmitted_frame_num = collections.deque(maxlen=20)
+        self.ns_received_frame_frame_num = collections.deque(maxlen=20)
+        self.ns_transmitted_frame_frame_num = collections.deque(maxlen=20)
+        self.module_received_frame_frame_num = collections.deque(maxlen=20)
+        self.aggregation_function_result = collections.deque(maxlen=20)
+
+        self.gw_1_received_frame_num.append(0)
+        self.gw_1_transmitted_frame_num.append(0)
+        self.gw_2_received_frame_num.append(0)
+        self.gw_2_transmitted_frame_num.append(0)
+        self.ns_received_frame_frame_num.append(0)
+        self.ns_transmitted_frame_frame_num.append(0)
+        self.module_received_frame_frame_num.append(0)
+        self.aggregation_function_result.append(0)
+
+        self.gw_1_received_frame_num.append(1)
+        self.gw_1_transmitted_frame_num.append(1)
+        self.gw_2_received_frame_num.append(1)
+        self.gw_2_transmitted_frame_num.append(1)
+        self.ns_received_frame_frame_num.append(1)
+        self.ns_transmitted_frame_frame_num.append(1)
+        self.module_received_frame_frame_num.append(1)
+        self.aggregation_function_result.append(1)
+
         self.devices_key_agreement_message_log = "log1"
         self.gw_key_agreement_message_log = "log2"
         self.module_key_agreement_message_log = "log3"
-        self.key_agreement_process_time = collections.deque(maxlen=20)
-        self.aggregation_function_result = collections.deque(maxlen=20)
-
-        self.legacy_gw_received_frame_num.append(0)
-        self.legacy_gw_received_frame_unique_num.append(0)
-        self.legacy_gw_transmitted_frame_num.append(0)
-        self.E2L_gw_received_frame_num.append(0)
-        self.E2L_gw_received_frame_unique_num.append(0)
-        self.E2L_gw_transmitted_frame_num.append(0)
-        self.module_received_frame_from_ns_num.append(0)
-        self.module_received_frame_from_gw_num.append(0)
-        self.key_agreement_process_time.append(0)
-        self.aggregation_function_result.append(0)
-
-        self.legacy_gw_received_frame_num.append(1)
-        self.legacy_gw_received_frame_unique_num.append(1)
-        self.legacy_gw_transmitted_frame_num.append(1)
-        self.E2L_gw_received_frame_num.append(1)
-        self.E2L_gw_received_frame_unique_num.append(1)
-        self.E2L_gw_transmitted_frame_num.append(1)
-        self.module_received_frame_from_ns_num.append(1)
-        self.module_received_frame_from_gw_num.append(1)
-        self.key_agreement_process_time.append(1)
-        self.aggregation_function_result.append(1)
 
     """
     def runMQTTSubscriber(self,

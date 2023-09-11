@@ -37,6 +37,26 @@ class GRPCDemoStub(object):
                 request_serializer=demo__pb2.Request.SerializeToString,
                 response_deserializer=demo__pb2.Response.FromString,
                 )
+        self.SimpleMethodsStatistics = channel.unary_unary(
+                '/demo.GRPCDemo/SimpleMethodsStatistics',
+                request_serializer=demo__pb2.SendStatistics.SerializeToString,
+                response_deserializer=demo__pb2.ReplyStatistics.FromString,
+                )
+        self.ClientStreamingMethodStatistics = channel.stream_unary(
+                '/demo.GRPCDemo/ClientStreamingMethodStatistics',
+                request_serializer=demo__pb2.SendStatistics.SerializeToString,
+                response_deserializer=demo__pb2.ReplyStatistics.FromString,
+                )
+        self.ServerStreamingMethodStatistics = channel.unary_stream(
+                '/demo.GRPCDemo/ServerStreamingMethodStatistics',
+                request_serializer=demo__pb2.SendStatistics.SerializeToString,
+                response_deserializer=demo__pb2.ReplyStatistics.FromString,
+                )
+        self.BidirectionalStreamingMethodStatistics = channel.stream_stream(
+                '/demo.GRPCDemo/BidirectionalStreamingMethodStatistics',
+                request_serializer=demo__pb2.SendStatistics.SerializeToString,
+                response_deserializer=demo__pb2.ReplyStatistics.FromString,
+                )
 
 
 class GRPCDemoServicer(object):
@@ -46,8 +66,7 @@ class GRPCDemoServicer(object):
     """
 
     def SimpleMethod(self, request, context):
-        """一元模式(在一次调用中, 客户端只能向服务器传输一次请求数据, 服务器也只能返回一次响应)
-        unary-unary(In a single call, the client can only send request once, and the server can
+        """unary-unary(In a single call, the client can only send request once, and the server can
         only respond once.)
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -55,8 +74,7 @@ class GRPCDemoServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def ClientStreamingMethod(self, request_iterator, context):
-        """客户端流模式（在一次调用中, 客户端可以多次向服务器传输数据, 但是服务器只能返回一次响应）
-        stream-unary (In a single call, the client can transfer data to the server several times,
+        """stream-unary (In a single call, the client can transfer data to the server several times,
         but the server can only return a response once.)
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -64,8 +82,7 @@ class GRPCDemoServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def ServerStreamingMethod(self, request, context):
-        """服务端流模式（在一次调用中, 客户端只能一次向服务器传输数据, 但是服务器可以多次返回响应）
-        unary-stream (In a single call, the client can only transmit data to the server at one time,
+        """unary-stream (In a single call, the client can only transmit data to the server at one time,
         but the server can return the response many times.)
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -73,8 +90,39 @@ class GRPCDemoServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def BidirectionalStreamingMethod(self, request_iterator, context):
-        """双向流模式 (在一次调用中, 客户端和服务器都可以向对方多次收发数据)
-        stream-stream (In a single call, both client and server can send and receive data
+        """stream-stream (In a single call, both client and server can send and receive data
+        to each other multiple times.)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SimpleMethodsStatistics(self, request, context):
+        """unary-unary(In a single call, the client can only send request once, and the server can
+        only respond once.)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ClientStreamingMethodStatistics(self, request_iterator, context):
+        """stream-unary (In a single call, the client can transfer data to the server several times,
+        but the server can only return a response once.)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ServerStreamingMethodStatistics(self, request, context):
+        """unary-stream (In a single call, the client can only transmit data to the server at one time,
+        but the server can return the response many times.)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def BidirectionalStreamingMethodStatistics(self, request_iterator, context):
+        """stream-stream (In a single call, both client and server can send and receive data
         to each other multiple times.)
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -103,6 +151,26 @@ def add_GRPCDemoServicer_to_server(servicer, server):
                     servicer.BidirectionalStreamingMethod,
                     request_deserializer=demo__pb2.Request.FromString,
                     response_serializer=demo__pb2.Response.SerializeToString,
+            ),
+            'SimpleMethodsStatistics': grpc.unary_unary_rpc_method_handler(
+                    servicer.SimpleMethodsStatistics,
+                    request_deserializer=demo__pb2.SendStatistics.FromString,
+                    response_serializer=demo__pb2.ReplyStatistics.SerializeToString,
+            ),
+            'ClientStreamingMethodStatistics': grpc.stream_unary_rpc_method_handler(
+                    servicer.ClientStreamingMethodStatistics,
+                    request_deserializer=demo__pb2.SendStatistics.FromString,
+                    response_serializer=demo__pb2.ReplyStatistics.SerializeToString,
+            ),
+            'ServerStreamingMethodStatistics': grpc.unary_stream_rpc_method_handler(
+                    servicer.ServerStreamingMethodStatistics,
+                    request_deserializer=demo__pb2.SendStatistics.FromString,
+                    response_serializer=demo__pb2.ReplyStatistics.SerializeToString,
+            ),
+            'BidirectionalStreamingMethodStatistics': grpc.stream_stream_rpc_method_handler(
+                    servicer.BidirectionalStreamingMethodStatistics,
+                    request_deserializer=demo__pb2.SendStatistics.FromString,
+                    response_serializer=demo__pb2.ReplyStatistics.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -182,5 +250,73 @@ class GRPCDemo(object):
         return grpc.experimental.stream_stream(request_iterator, target, '/demo.GRPCDemo/BidirectionalStreamingMethod',
             demo__pb2.Request.SerializeToString,
             demo__pb2.Response.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SimpleMethodsStatistics(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/demo.GRPCDemo/SimpleMethodsStatistics',
+            demo__pb2.SendStatistics.SerializeToString,
+            demo__pb2.ReplyStatistics.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ClientStreamingMethodStatistics(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_unary(request_iterator, target, '/demo.GRPCDemo/ClientStreamingMethodStatistics',
+            demo__pb2.SendStatistics.SerializeToString,
+            demo__pb2.ReplyStatistics.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ServerStreamingMethodStatistics(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/demo.GRPCDemo/ServerStreamingMethodStatistics',
+            demo__pb2.SendStatistics.SerializeToString,
+            demo__pb2.ReplyStatistics.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def BidirectionalStreamingMethodStatistics(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_stream(request_iterator, target, '/demo.GRPCDemo/BidirectionalStreamingMethodStatistics',
+            demo__pb2.SendStatistics.SerializeToString,
+            demo__pb2.ReplyStatistics.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

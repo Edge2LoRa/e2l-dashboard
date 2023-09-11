@@ -76,31 +76,26 @@ def client_streaming_method(stub):
     # create a generator
     def request_messages():
         for i in range(20):
-            request = demo_pb2.Request(
+            request = demo_pb2.SendStatistics(
                 client_id=CLIENT_ID,
-                request_data="called by Python client, message:%d" % i,
-                legacy_gw_received_frame_num = random.randint(3, 9),
-                legacy_gw_received_frame_unique_num = random.randint(3, 9),
-                legacy_gw_transmitted_frame_num = random.randint(3, 9),
-                E2L_gw_received_frame_num = random.randint(3, 9),
-                E2L_gw_received_frame_unique_num = random.randint(3, 9),
-                E2L_gw_transmitted_frame_num = random.randint(3, 9),
-                module_received_frame_from_ns_num = random.randint(3, 9),
-                module_received_frame_from_gw_num = random.randint(3, 9),
-                devices_key_agreement_message_log = "log1",
-                gw_key_agreement_message_log = "log2",
-                module_key_agreement_message_log = "log3",
-                key_agreement_process_time = random.randint(3, 9),
+                message_data="called by Python client, message:%d" % i,
+                gw_1_received_frame_num = random.randint(3, 9),
+                gw_1_transmitted_frame_num = random.randint(3, 9),
+                gw_2_received_frame_num = random.randint(3, 9),
+                gw_2_transmitted_frame_num = random.randint(3, 9),
+                ns_received_frame_frame_num = random.randint(3, 9),
+                ns_transmitted_frame_frame_num = random.randint(3, 9),
+                module_received_frame_frame_num = random.randint(3, 9),
                 aggregation_function_result = random.randint(3, 9),
             )
             yield request
             print("1")
             time.sleep(3)
 
-    response = stub.ClientStreamingMethod(request_messages())
+    response = stub.ClientStreamingMethodStatistics(request_messages())
     print(
         "resp from server(%d), the message=%s"
-        % (response.server_id, response.response_data)
+        % (response.server_id, response)
     )
     print(response.legacy_device_num)
     print(response.E2L_device_num)
@@ -167,6 +162,7 @@ def main():
         # server_streaming_method(stub)
         #
         # bidirectional_streaming_method(stub)
+
 
 
 if __name__ == "__main__":
