@@ -32,28 +32,11 @@ python -m grpc_tools.protoc -I../../protos --python_out=. --pyi_out=. --grpc_pyt
 message Request {
     int64 client_id = 1;
     string request_data = 2;
-    int64 legacy_gw_received_frame_num = 3;
-    int64 legacy_gw_received_frame_unique_num = 4;
-    int64 legacy_gw_transmitted_frame_num = 5;
-    int64 E2L_gw_received_frame_num = 6;
-    int64 E2L_gw_received_frame_unique_num = 7;
-    int64 E2L_gw_transmitted_frame_num = 8;
-    int64 module_received_frame_from_ns_num = 9;
-    int64 module_received_frame_from_gw_num = 10;
-    string devices_key_agreement_message_log = 11;
-    string gw_key_agreement_message_log = 12;
-    string module_key_agreement_message_log = 13;
-    int64 key_agreement_process_time = 14;
-    int64 aggregation_function_result = 15;
 }
 
 message Response {
     int64 server_id = 1;
     string response_data = 2;
-    int64 legacy_device_num = 3;
-    int64 E2L_device_num = 4;
-    string process_function = 5;
-    int64 process_window = 6;
 }
 
 
@@ -79,6 +62,25 @@ message ReplyStatistics {
     int64 start_key_agreement_process = 6;
     string process_function = 7;
     int64 process_window = 8;
+    int64 change_processing_configuraiton = 9;
+}
+
+/*
+key_agreement_message_node_id = 1 --> ED
+key_agreement_message_node_id = 2 --> GW
+key_agreement_message_node_id = 3 --> DM
+*/
+message SendLogMessage {
+    int64 client_id = 1;
+    string message_data = 2;
+    int64 key_agreement_log_message_node_id = 3;
+    string key_agreement_message_log = 4;
+    int64 key_agreement_process_time = 5;
+}
+
+message ReplyLogMessage {
+    int64 server_id = 1;
+    string response_data = 2;
 }
 
 message SendLogED {
@@ -112,7 +114,7 @@ message SendLogDM {
     int64 key_agreement_process_time = 4;
 }
 
-message ReplyLog {
+message ReplyLogDM {
     int64 server_id = 1;
     string response_data = 2;
 }
@@ -152,6 +154,24 @@ service GRPCDemo {
     // stream-stream (In a single call, both client and server can send and receive data
     // to each other multiple times.)
     rpc BidirectionalStreamingMethodStatistics (stream SendStatistics) returns (stream ReplyStatistics);
+
+
+    // unary-unary(In a single call, the client can only send request once, and the server can
+    // only respond once.)
+    rpc SimpleMethodsLogMessage (SendLogMessage) returns (ReplyLogMessage);
+
+    // unary-unary(In a single call, the client can only send request once, and the server can
+    // only respond once.)
+    rpc SimpleMethodsLogED (SendLogED) returns (ReplyLogED);
+
+    // unary-unary(In a single call, the client can only send request once, and the server can
+    // only respond once.)
+    rpc SimpleMethodsLogGW (SendLogGW) returns (ReplyLogGW);
+
+    // unary-unary(In a single call, the client can only send request once, and the server can
+    // only respond once.)
+    rpc SimpleMethodsLogDM (SendLogDM) returns (ReplyLogDM);
+
 
 }
 

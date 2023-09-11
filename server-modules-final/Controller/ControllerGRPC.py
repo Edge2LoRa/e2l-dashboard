@@ -37,49 +37,38 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
         self.demoServerId = 0
         self.controllerGRPC = controllerGRPC
 
-    def SimpleMethod(self, request, context):
-        print(
-            "SimpleMethod called by client(%d) the message: %s"
-            % (request.client_id, request.request_data)
-        )
+    def SimpleMethodsLogMessage(self, request, context):
+        # print("SimpleMethod called by client(%d) the message: %s" % (request.client_id, request) )
+        print("SimpleMethod called by client(%d) the message:" % (request.client_id) )
 
-        self.controllerGRPC.legacy_gw_received_frame_num.append(request.legacy_gw_received_frame_num)
-        self.controllerGRPC.legacy_gw_received_frame_unique_num.append(request.legacy_gw_received_frame_unique_num)
-        self.controllerGRPC.legacy_gw_transmitted_frame_num.append(request.legacy_gw_transmitted_frame_num)
-        self.controllerGRPC.E2L_gw_received_frame_num.append(request.E2L_gw_received_frame_num)
-        self.controllerGRPC.E2L_gw_received_frame_unique_num.append(request.E2L_gw_received_frame_unique_num)
-        self.controllerGRPC.E2L_gw_transmitted_frame_num.append(request.E2L_gw_transmitted_frame_num)
-        self.controllerGRPC.module_received_frame_from_ns_num.append(request.module_received_frame_from_ns_num)
-        self.controllerGRPC.module_received_frame_from_gw_num.append(request.module_received_frame_from_gw_num)
-        self.controllerGRPC.key_agreement_process_time.append(request.key_agreement_process_time)
-        self.controllerGRPC.aggregation_function_result.append(request.aggregation_function_result)
+        if request.key_agreement_log_message_node_id == 1:
+            self.controllerGRPC.devices_key_agreement_message_log = request.key_agreement_message_log
+            self.controllerGRPC.devices_key_agreement_processing_time = request.key_agreement_process_time
+            self.controllerGRPC.devices_key_agreement_message_log_updated = 1
 
-        self.controllerGRPC.devices_key_agreement_message_log = request.devices_key_agreement_message_log
-        self.controllerGRPC.gw_key_agreement_message_log = request.gw_key_agreement_message_log
-        self.controllerGRPC.module_key_agreement_message_log = request.module_key_agreement_message_log
+        if request.key_agreement_log_message_node_id == 2:
+            self.controllerGRPC.gw_key_agreement_message_log = request.key_agreement_message_log
+            self.controllerGRPC.gw_key_agreement_processing_time = request.key_agreement_process_time
+            self.controllerGRPC.gw_key_agreement_message_log_updated = 1
 
-        response = demo_pb2.Response(
+        if request.key_agreement_log_message_node_id == 3:
+            self.controllerGRPC.module_key_agreement_message_log = request.key_agreement_message_log
+            self.controllerGRPC.module_key_agreement_processing_time = request.key_agreement_process_time
+            self.controllerGRPC.module_key_agreement_message_updated = 1
+
+        response = demo_pb2.ReplyLogMessage(
             server_id=SERVER_ID,
             response_data="Python server SimpleMethod Ok!!!!",
-            legacy_device_num = self.controllerGRPC.legacy_device_num,
-            E2L_device_num = self.controllerGRPC.E2L_device_num,
-            process_function = self.controllerGRPC.process_function,
-            process_window = self.controllerGRPC.process_window,
         )
         return response
 
-    # 客户端流模式（在一次调用中, 客户端可以多次向服务器传输数据, 但是服务器只能返回一次响应）
     # stream-unary (In a single call, the client can transfer data to the server several times,
     # but the server can only return a response once.)
     def ClientStreamingMethodStatistics(self, request_iterator, context):
         print("ClientStreamingMethod called by client...")
 
         for request in request_iterator:
-            print(
-                "recv from client(%d), message= %s"
-                % (request.client_id, request.message_data)
-            )
-
+            print("recv from client(%d), message= %s" % (request.client_id, request.message_data))
             self.controllerGRPC.gw_1_received_frame_num.append(request.gw_1_received_frame_num)
             self.controllerGRPC.gw_1_transmitted_frame_num.append(request.gw_1_transmitted_frame_num)
             self.controllerGRPC.gw_2_received_frame_num.append(request.gw_2_received_frame_num)
@@ -99,54 +88,52 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
             process_function = self.controllerGRPC.process_function,
             process_window = self.controllerGRPC.process_window,
         )
+
+        if self.controllerGRPC.start_key_agreement_process:
+            self.controllerGRPC.start_key_agreement_process = 0
+
         return response
 
-    # 服务端流模式（在一次调用中, 客户端只能一次向服务器传输数据, 但是服务器可以多次返回响应）
-    # unary-stream (In a single call, the client can only transmit data to the server at one time,
-    # but the server can return the response many times.)
-    def ServerStreamingMethod(self, request, context):
-        print(
-            "ServerStreamingMethod called by client(%d), message= %s"
-            % (request.client_id, request.request_data)
-        )
-
-        # 创建一个生成器
-        # create a generator
-        def response_messages():
-            for i in range(5):
-                response = demo_pb2.Response(
-                    server_id=SERVER_ID,
-                    response_data="send by Python server, message=%d" % i,
-                )
-                yield response
-
-        return response_messages()
-
-    # 双向流模式 (在一次调用中, 客户端和服务器都可以向对方多次收发数据)
-    # stream-stream (In a single call, both client and server can send and receive data
-    # to each other multiple times.)
-    def BidirectionalStreamingMethod(self, request_iterator, context):
-        print("BidirectionalStreamingMethod called by client...")
-
-        # 开启一个子线程去接收数据
-        # Open a sub thread to receive data
-        def parse_request():
-            for request in request_iterator:
-                print(
-                    "recv from client(%d), message= %s"
-                    % (request.client_id, request.request_data)
-                )
-
-        t = threading.Thread(target=parse_request)
-        t.start()
-
-        for i in range(5):
-            yield demo_pb2.Response(
-                server_id=SERVER_ID,
-                response_data="send by Python server, message= %d" % i,
-            )
-
-        t.join()
+    # # unary-stream (In a single call, the client can only transmit data to the server at one time,
+    # # but the server can return the response many times.)
+    # def ServerStreamingMethod(self, request, context):
+    #     print( "ServerStreamingMethod called by client(%d), message= %s" % (request.client_id, request.request_data) )
+    #
+    #     # create a generator
+    #     def response_messages():
+    #         for i in range(5):
+    #             response = demo_pb2.Response(
+    #                 server_id=SERVER_ID,
+    #                 response_data="send by Python server, message=%d" % i,
+    #             )
+    #             yield response
+    #
+    #     return response_messages()
+    #
+    # # stream-stream (In a single call, both client and server can send and receive data
+    # # to each other multiple times.)
+    # def BidirectionalStreamingMethod(self, request_iterator, context):
+    #     print("BidirectionalStreamingMethod called by client...")
+    #
+    #     # 开启一个子线程去接收数据
+    #     # Open a sub thread to receive data
+    #     def parse_request():
+    #         for request in request_iterator:
+    #             print(
+    #                 "recv from client(%d), message= %s"
+    #                 % (request.client_id, request.request_data)
+    #             )
+    #
+    #     t = threading.Thread(target=parse_request)
+    #     t.start()
+    #
+    #     for i in range(5):
+    #         yield demo_pb2.Response(
+    #             server_id=SERVER_ID,
+    #             response_data="send by Python server, message= %d" % i,
+    #         )
+    #
+    #     t.join()
 
 
 class ControllerGRPC():
@@ -169,9 +156,15 @@ class ControllerGRPC():
         self.ed_1_gw_selection = 1
         self.ed_2_gw_selection = 1
         self.ed_3_gw_selection = 1
-        self.process_function="mean"
-        self.process_window=10
+
         self.start_key_agreement_process = 0
+        self.start_key_agreement_process_old = 0
+
+        self.process_function = "mean"
+        self.process_window = 10
+
+        self.change_processing_configuraiton = 0
+        self.change_processing_configuraiton_old = 0
 
         self.gw_1_received_frame_num = collections.deque(maxlen=20)
         self.gw_1_transmitted_frame_num = collections.deque(maxlen=20)
@@ -200,9 +193,15 @@ class ControllerGRPC():
         self.module_received_frame_frame_num.append(1)
         self.aggregation_function_result.append(1)
 
-        self.devices_key_agreement_message_log = "log1"
-        self.gw_key_agreement_message_log = "log2"
-        self.module_key_agreement_message_log = "log3"
+        self.devices_key_agreement_message_log = "log ED"
+        self.devices_key_agreement_message_log_updated = 0
+        self.devices_key_agreement_processing_time = 0
+        self.gw_key_agreement_message_log = "log GW"
+        self.gw_key_agreement_message_log_updated = 0
+        self.gw_key_agreement_processing_time = 0
+        self.module_key_agreement_message_log = "log DM"
+        self.module_key_agreement_message_updated = 0
+        self.module_key_agreement_processing_time = 0
 
     """
     def runMQTTSubscriber(self,

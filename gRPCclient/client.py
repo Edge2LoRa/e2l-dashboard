@@ -22,8 +22,8 @@ import demo_pb2
 import demo_pb2_grpc
 
 __all__ = [
-    "simple_method",
-    "client_streaming_method",
+    "send_log_message",
+    "send_statistics",
     "server_streaming_method",
     "bidirectional_streaming_method",
 ]
@@ -39,26 +39,16 @@ CLIENT_ID = 1
 # 一元模式(在一次调用中, 客户端只能向服务器传输一次请求数据, 服务器也只能返回一次响应)
 # unary-unary(In a single call, the client can only send request once, and the server can
 # only respond once.)
-def simple_method(stub):
-    print("--------------Call SimpleMethod Begin--------------")
-    request = demo_pb2.Request(
+def send_log_message(stub):
+    print("--------------Call SimpleMethod LOG ED--------------")
+    request = demo_pb2.SendLogMessage(
         client_id=CLIENT_ID,
-        request_data="called by Python client",
-        legacy_gw_received_frame_num=random.randint(3, 9),
-        legacy_gw_received_frame_unique_num=random.randint(3, 9),
-        legacy_gw_transmitted_frame_num=random.randint(3, 9),
-        E2L_gw_received_frame_num=random.randint(3, 9),
-        E2L_gw_received_frame_unique_num=random.randint(3, 9),
-        E2L_gw_transmitted_frame_num=random.randint(3, 9),
-        module_received_frame_from_ns_num=random.randint(3, 9),
-        module_received_frame_from_gw_num=random.randint(3, 9),
-        devices_key_agreement_message_log="log1",
-        gw_key_agreement_message_log="log2",
-        module_key_agreement_message_log="log3",
-        key_agreement_process_time=random.randint(3, 9),
-        aggregation_function_result=random.randint(3, 9),
+        message_data="called by Python client",
+        key_agreement_log_message_node_id = 1,
+        key_agreement_message_log = "ED log message #{}".format(random.randint(3, 99)),
+        key_agreement_process_time = random.randint(3, 9),
     )
-    response = stub.SimpleMethod(request)
+    response = stub.SimpleMethodsLogMessage(request)
     print(
         "resp from server(%d), the message=%s"
         % (response.server_id, response.response_data)
@@ -66,16 +56,50 @@ def simple_method(stub):
     print("--------------Call SimpleMethod Over---------------")
 
 
+    time.sleep(2)
+    print("--------------Call SimpleMethod LOG GW--------------")
+    request = demo_pb2.SendLogMessage(
+        client_id=CLIENT_ID,
+        message_data="called by Python client",
+        key_agreement_log_message_node_id = 2,
+        key_agreement_message_log = "GW log message #{}".format(random.randint(3, 99)),
+        key_agreement_process_time = random.randint(3, 9),
+    )
+    response = stub.SimpleMethodsLogMessage(request)
+    print(
+        "resp from server(%d), the message=%s"
+        % (response.server_id, response.response_data)
+    )
+    print("--------------Call SimpleMethod Over---------------")
+
+    time.sleep(2)
+    print("--------------Call SimpleMethod LOG ED--------------")
+    request = demo_pb2.SendLogMessage(
+        client_id=CLIENT_ID,
+        message_data="called by Python client",
+        key_agreement_log_message_node_id = 3,
+        key_agreement_message_log = "DM log message #{}".format(random.randint(3, 99)),
+        key_agreement_process_time = random.randint(3, 9),
+    )
+    response = stub.SimpleMethodsLogMessage(request)
+    print(
+        "resp from server(%d), the message=%s"
+        % (response.server_id, response.response_data)
+    )
+    print("--------------Call SimpleMethod Over---------------")
+
+
+
 # 客户端流模式（在一次调用中, 客户端可以多次向服务器传输数据, 但是服务器只能返回一次响应）
 # stream-unary (In a single call, the client can transfer data to the server several times,
 # but the server can only return a response once.)
-def client_streaming_method(stub):
+def send_statistics(stub):
     print("--------------Call ClientStreamingMethod Begin--------------")
 
     # 创建一个生成器
     # create a generator
     def request_messages():
-        for i in range(20):
+        for i in range(2):
             request = demo_pb2.SendStatistics(
                 client_id=CLIENT_ID,
                 message_data="called by Python client, message:%d" % i,
@@ -89,7 +113,7 @@ def client_streaming_method(stub):
                 aggregation_function_result = random.randint(3, 9),
             )
             yield request
-            print("1")
+            print(i)
             time.sleep(3)
 
     response = stub.ClientStreamingMethodStatistics(request_messages())
@@ -97,10 +121,15 @@ def client_streaming_method(stub):
         "resp from server(%d), the message=%s"
         % (response.server_id, response)
     )
-    print(response.legacy_device_num)
-    print(response.E2L_device_num)
-    print(response.process_function)
-    print(response.process_window)
+    # print(response.ed_1_gw_selection)
+    # print(response.ed_1_gw_selection)
+    # print(response.ed_2_gw_selection)
+    print(response.start_key_agreement_process)
+    # print(response.process_window)
+    # print(response.process_window)
+    # print(response.change_processing_configuraiton)
+
+
     print("--------------Call ClientStreamingMethod Over---------------")
 
 
@@ -155,9 +184,11 @@ def main():
     with grpc.insecure_channel(SERVER_ADDRESS) as channel:
         stub = demo_pb2_grpc.GRPCDemoStub(channel)
 
-        # simple_method(stub)
-        #
-        client_streaming_method(stub)
+        for ii in range(10):
+          send_log_message(stub)
+          time.sleep(3)
+          send_statistics(stub)
+
         #
         # server_streaming_method(stub)
         #

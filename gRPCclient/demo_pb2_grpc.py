@@ -57,6 +57,26 @@ class GRPCDemoStub(object):
                 request_serializer=demo__pb2.SendStatistics.SerializeToString,
                 response_deserializer=demo__pb2.ReplyStatistics.FromString,
                 )
+        self.SimpleMethodsLogMessage = channel.unary_unary(
+                '/demo.GRPCDemo/SimpleMethodsLogMessage',
+                request_serializer=demo__pb2.SendLogMessage.SerializeToString,
+                response_deserializer=demo__pb2.ReplyLogMessage.FromString,
+                )
+        self.SimpleMethodsLogED = channel.unary_unary(
+                '/demo.GRPCDemo/SimpleMethodsLogED',
+                request_serializer=demo__pb2.SendLogED.SerializeToString,
+                response_deserializer=demo__pb2.ReplyLogED.FromString,
+                )
+        self.SimpleMethodsLogGW = channel.unary_unary(
+                '/demo.GRPCDemo/SimpleMethodsLogGW',
+                request_serializer=demo__pb2.SendLogGW.SerializeToString,
+                response_deserializer=demo__pb2.ReplyLogGW.FromString,
+                )
+        self.SimpleMethodsLogDM = channel.unary_unary(
+                '/demo.GRPCDemo/SimpleMethodsLogDM',
+                request_serializer=demo__pb2.SendLogDM.SerializeToString,
+                response_deserializer=demo__pb2.ReplyLogDM.FromString,
+                )
 
 
 class GRPCDemoServicer(object):
@@ -129,6 +149,38 @@ class GRPCDemoServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SimpleMethodsLogMessage(self, request, context):
+        """unary-unary(In a single call, the client can only send request once, and the server can
+        only respond once.)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SimpleMethodsLogED(self, request, context):
+        """unary-unary(In a single call, the client can only send request once, and the server can
+        only respond once.)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SimpleMethodsLogGW(self, request, context):
+        """unary-unary(In a single call, the client can only send request once, and the server can
+        only respond once.)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SimpleMethodsLogDM(self, request, context):
+        """unary-unary(In a single call, the client can only send request once, and the server can
+        only respond once.)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_GRPCDemoServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -171,6 +223,26 @@ def add_GRPCDemoServicer_to_server(servicer, server):
                     servicer.BidirectionalStreamingMethodStatistics,
                     request_deserializer=demo__pb2.SendStatistics.FromString,
                     response_serializer=demo__pb2.ReplyStatistics.SerializeToString,
+            ),
+            'SimpleMethodsLogMessage': grpc.unary_unary_rpc_method_handler(
+                    servicer.SimpleMethodsLogMessage,
+                    request_deserializer=demo__pb2.SendLogMessage.FromString,
+                    response_serializer=demo__pb2.ReplyLogMessage.SerializeToString,
+            ),
+            'SimpleMethodsLogED': grpc.unary_unary_rpc_method_handler(
+                    servicer.SimpleMethodsLogED,
+                    request_deserializer=demo__pb2.SendLogED.FromString,
+                    response_serializer=demo__pb2.ReplyLogED.SerializeToString,
+            ),
+            'SimpleMethodsLogGW': grpc.unary_unary_rpc_method_handler(
+                    servicer.SimpleMethodsLogGW,
+                    request_deserializer=demo__pb2.SendLogGW.FromString,
+                    response_serializer=demo__pb2.ReplyLogGW.SerializeToString,
+            ),
+            'SimpleMethodsLogDM': grpc.unary_unary_rpc_method_handler(
+                    servicer.SimpleMethodsLogDM,
+                    request_deserializer=demo__pb2.SendLogDM.FromString,
+                    response_serializer=demo__pb2.ReplyLogDM.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -318,5 +390,73 @@ class GRPCDemo(object):
         return grpc.experimental.stream_stream(request_iterator, target, '/demo.GRPCDemo/BidirectionalStreamingMethodStatistics',
             demo__pb2.SendStatistics.SerializeToString,
             demo__pb2.ReplyStatistics.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SimpleMethodsLogMessage(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/demo.GRPCDemo/SimpleMethodsLogMessage',
+            demo__pb2.SendLogMessage.SerializeToString,
+            demo__pb2.ReplyLogMessage.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SimpleMethodsLogED(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/demo.GRPCDemo/SimpleMethodsLogED',
+            demo__pb2.SendLogED.SerializeToString,
+            demo__pb2.ReplyLogED.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SimpleMethodsLogGW(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/demo.GRPCDemo/SimpleMethodsLogGW',
+            demo__pb2.SendLogGW.SerializeToString,
+            demo__pb2.ReplyLogGW.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SimpleMethodsLogDM(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/demo.GRPCDemo/SimpleMethodsLogDM',
+            demo__pb2.SendLogDM.SerializeToString,
+            demo__pb2.ReplyLogDM.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
