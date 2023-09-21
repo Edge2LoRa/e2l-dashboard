@@ -99,7 +99,7 @@ def send_statistics(stub):
     # 创建一个生成器
     # create a generator
     def request_messages():
-        for i in range(2):
+        for i in range(1):
             request = demo_pb2.SendStatistics(
                 client_id=CLIENT_ID,
                 message_data="called by Python client, message:%d" % i,
@@ -114,7 +114,7 @@ def send_statistics(stub):
             )
             yield request
             print(i)
-            time.sleep(3)
+            time.sleep(1)
 
     response = stub.ClientStreamingMethodStatistics(request_messages())
     print(
