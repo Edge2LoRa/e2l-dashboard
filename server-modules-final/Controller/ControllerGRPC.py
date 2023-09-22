@@ -37,8 +37,36 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
         self.demoServerId = 0
         self.controllerGRPC = controllerGRPC
 
+
+    def SimpleMethodsJoinUpdateMessage(self, request, context):
+        print("SimpleMethodsJoinUpdateMessage called by client(%d) the message: %s" % (request.client_id, request) )
+        # print("SimpleMethod called by client(%d) the message:" % (request.client_id) )
+
+        # print(request.key_agreement_log_message_node_id)
+        # print(request.key_agreement_message_log)
+        # print(request.key_agreement_process_time)
+
+        if request.ed_id == 1:
+            self.ed_1_gw_selection_confirmed = request.ed_gw
+            self.ed_1_gw_selection_updated = 1
+
+        if request.ed_id == 2:
+            self.ed_2_gw_selection_confirmed = request.ed_gw
+            self.ed_2_gw_selection_updated = 1
+
+        if request.ed_id == 3:
+            self.ed_3_gw_selection_confirmed = request.ed_gw
+            self.ed_3_gw_selection_updated = 1
+
+        response = demo_pb2.ReplyLogMessage(
+            server_id=SERVER_ID,
+            response_data="Python server SimpleMethod Ok!!!!",
+        )
+        return response
+
+
     def SimpleMethodsLogMessage(self, request, context):
-        print("SimpleMethod called by client(%d) the message: %s" % (request.client_id, request) )
+        print("SimpleMethodsLogMessage called by client(%d) the message: %s" % (request.client_id, request) )
         # print("SimpleMethod called by client(%d) the message:" % (request.client_id) )
 
         # print(request.key_agreement_log_message_node_id)
@@ -167,10 +195,7 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
 
 class ControllerGRPC():
     bind_address = "0.0.0.0"
-    port = "50051"
-    E2L_IP = "10.8.9.27"
-    E2L_PORT = "1680"
-
+    port = "23333"
 
     def __init__(self, loggingLevel=logging.INFO):
 
@@ -242,9 +267,12 @@ class ControllerGRPC():
         self.module_key_agreement_message_updated = 0
         self.module_key_agreement_processing_time = 0
 
-        self.ed_1_gw_selection_confirmation = 0
-        self.ed_2_gw_selection_confirmation = 0
-        self.ed_3_gw_selection_confirmation = 0
+        self.ed_1_gw_selection_confirmed = 0
+        self.ed_2_gw_selection_confirmed = 0
+        self.ed_3_gw_selection_confirmed = 0
+        self.ed_1_gw_selection_updated = 0
+        self.ed_2_gw_selection_updated = 0
+        self.ed_3_gw_selection_updated = 0
 
 
     def runServerGRPC(self, bind_address=bind_address, port=port):

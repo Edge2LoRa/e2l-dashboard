@@ -28,7 +28,7 @@ __all__ = [
     "bidirectional_streaming_method",
 ]
 
-SERVER_ADDRESS = "localhost:23333"
+SERVER_ADDRESS = "lab.tti.unipa.it:23333"
 CLIENT_ID = 1
 
 gw_1_received_frame_num_old = 0
@@ -38,12 +38,60 @@ gw_2_transmitted_frame_num_old = 0
 module_received_frame_frame_num_old = 0
 
 
-# 中文注释和英文翻译
 # Note that this example was contributed by an external user using Chinese comments.
 # In all cases, the Chinese comment text is translated to English just below it.
 
+def send_join_update_message(stub):
+  ed_id = [1, 3, 3, 3, 1, 3, 1, 3, 3, 3, 1, 3, 1, 3, 3, 3, 1, 3, 1]
+  gw_id = [1, 1, 2, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+  for ii in range(5):
+    request = demo_pb2.SendJoinUpdateMessage(
+      client_id=CLIENT_ID,
+      message_data="called by Python client",
+      ed_id=ed_id[ii],
+      gw_id=gw_id[ii],
+    )
+    response = stub.SimpleMethodsJoinUpdateMessage(request)
+    print(
+      "resp from server(%d), the message=%s"
+      % (response.server_id, response.response_data)
+    )
+    time.sleep(2)
 
-# 一元模式(在一次调用中, 客户端只能向服务器传输一次请求数据, 服务器也只能返回一次响应)
+  #
+  # time.sleep(2)
+  # print("--------------Call SimpleMethod LOG GW--------------")
+  # request = demo_pb2.SendLogMessage(
+  #     client_id=CLIENT_ID,
+  #     message_data="called by Python client",
+  #     key_agreement_log_message_node_id = 2,
+  #     key_agreement_message_log = "GW log message #{}".format(random.randint(3, 99)),
+  #     key_agreement_process_time = random.randint(3, 9),
+  # )
+  # response = stub.SimpleMethodsLogMessage(request)
+  # print(
+  #     "resp from server(%d), the message=%s"
+  #     % (response.server_id, response.response_data)
+  # )
+  # print("--------------Call SimpleMethod Over---------------")
+  #
+  # time.sleep(2)
+  # print("--------------Call SimpleMethod LOG ED--------------")
+  # request = demo_pb2.SendLogMessage(
+  #     client_id=CLIENT_ID,
+  #     message_data="called by Python client",
+  #     key_agreement_log_message_node_id = 3,
+  #     key_agreement_message_log = "DM log message #{}".format(random.randint(3, 99)),
+  #     key_agreement_process_time = random.randint(3, 9),
+  # )
+  # response = stub.SimpleMethodsLogMessage(request)
+  # print(
+  #     "resp from server(%d), the message=%s"
+  #     % (response.server_id, response.response_data)
+  # )
+  # print("--------------Call SimpleMethod Over---------------")
+
+
 # unary-unary(In a single call, the client can only send request once, and the server can
 # only respond once.)
 def send_log_message(stub):
@@ -212,16 +260,19 @@ def main():
         stub = demo_pb2_grpc.GRPCDemoStub(channel)
 
         for ii in range(100):
-          send_log_message(stub)
+          send_join_update_message(stub)
           time.sleep(3)
 
-          gw_1_received_frame_num_old += random.randint(3, 9)
-          gw_1_transmitted_frame_num_old += random.randint(3, 9)
-          gw_2_received_frame_num_old += random.randint(3, 9)
-          gw_2_transmitted_frame_num_old += random.randint(3, 9)
-          module_received_frame_frame_num_old += random.randint(3, 9)
-
-          send_statistics(stub)
+          # send_log_message(stub)
+          # time.sleep(3)
+          #
+          # gw_1_received_frame_num_old += random.randint(3, 9)
+          # gw_1_transmitted_frame_num_old += random.randint(3, 9)
+          # gw_2_received_frame_num_old += random.randint(3, 9)
+          # gw_2_transmitted_frame_num_old += random.randint(3, 9)
+          # module_received_frame_frame_num_old += random.randint(3, 9)
+          #
+          # send_statistics(stub)
 
         #
         # server_streaming_method(stub)
