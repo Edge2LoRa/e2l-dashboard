@@ -9,13 +9,10 @@ import logging
 import threading
 from multiprocessing import Process, Queue
 
-GATEWAY_UDP_IP = "10.8.9.27";
-GATEWAY_UDP_PORT = 1680
 
-bind_address = "localhost"
+bind_address = "0.0.0.0"
 grpc_port = "23333"
 
-MONGO_DB_IP = "10.8.9.27"
 
 class MainApp():
 

@@ -12,7 +12,6 @@ dash-cytoscape==0.3.0
 dash-daq==0.5.0
 dash-html-components==2.0.0
 dash-table==5.0.0
-dataclasses==0.8
 decorator==4.4.2
 Flask==2.0.3
 google==3.0.0
