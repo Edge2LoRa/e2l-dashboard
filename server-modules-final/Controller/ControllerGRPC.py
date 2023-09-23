@@ -47,15 +47,15 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
         # print(request.key_agreement_process_time)
 
         if request.ed_id == 1:
-            self.ed_1_gw_selection_confirmed = request.ed_gw
+            self.ed_1_gw_selection_confirmed = request.gw_id
             self.ed_1_gw_selection_updated = 1
 
         if request.ed_id == 2:
-            self.ed_2_gw_selection_confirmed = request.ed_gw
+            self.ed_2_gw_selection_confirmed = request.gw_id
             self.ed_2_gw_selection_updated = 1
 
         if request.ed_id == 3:
-            self.ed_3_gw_selection_confirmed = request.ed_gw
+            self.ed_3_gw_selection_confirmed = request.gw_id
             self.ed_3_gw_selection_updated = 1
 
         response = demo_pb2.ReplyLogMessage(
