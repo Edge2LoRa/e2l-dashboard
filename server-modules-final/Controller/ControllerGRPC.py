@@ -42,21 +42,17 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
         print("SimpleMethodsJoinUpdateMessage called by client(%d) the message: %s" % (request.client_id, request) )
         # print("SimpleMethod called by client(%d) the message:" % (request.client_id) )
 
-        # print(request.key_agreement_log_message_node_id)
-        # print(request.key_agreement_message_log)
-        # print(request.key_agreement_process_time)
-
         if request.ed_id == 1:
-            self.ed_1_gw_selection_confirmed = request.gw_id
-            self.ed_1_gw_selection_updated = 1
+            self.controllerGRPC.ed_1_gw_selection_confirmed = request.gw_id
+            self.controllerGRPC.ed_1_gw_selection_updated = 1
 
         if request.ed_id == 2:
-            self.ed_2_gw_selection_confirmed = request.gw_id
-            self.ed_2_gw_selection_updated = 1
+            self.controllerGRPC.ed_2_gw_selection_confirmed = request.gw_id
+            self.controllerGRPC.ed_2_gw_selection_updated = 1
 
         if request.ed_id == 3:
-            self.ed_3_gw_selection_confirmed = request.gw_id
-            self.ed_3_gw_selection_updated = 1
+            self.controllerGRPC.ed_3_gw_selection_confirmed = request.gw_id
+            self.controllerGRPC.ed_3_gw_selection_updated = 1
 
         response = demo_pb2.ReplyLogMessage(
             server_id=SERVER_ID,

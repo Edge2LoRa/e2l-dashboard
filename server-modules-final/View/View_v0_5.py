@@ -433,10 +433,9 @@ class ViewGui:
                     edge_y.append(y1)
                     edge_y.append(None)
 
-                print("test new line")
-                print(n)
-                print(edge_x)
-                print(edge_y)
+                # print(edge_x)
+                # print(edge_y)
+
 
                 edge_trace_E2LE = go.Scatter(
                     x=edge_x, y=edge_y,

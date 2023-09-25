@@ -152,7 +152,7 @@ class ViewGui:
                                     "Enabling Edge processing on LoRaWAN architecture",
                                     style={"margin-bottom": "0px"},
                                 ),
-                                html.H5("Stefano Milani, Domenico Garlisi, Matteo Di Fraia, Patrizio Pisani, Ioannis Chatzigiannakis", style={"margin-top": "0px"}
+                                html.H5("Stefano Milani, Ioannis Chatzigiannakis, Domenico Garlisi, Matteo Di Fraia, Patrizio Pisani", style={"margin-top": "0px"}
                                 ),
                             ]
                         )
@@ -175,16 +175,9 @@ class ViewGui:
 
                 dbc.Row(
                     [
-                    ],
-                    style={"height": "1vh", 'margin': '0px'},
-                    className='bg-white'
-                ),
-
-                dbc.Row(
-                    [
                         html.H6('Settings', style={'margin-top': '12px', 'margin-left': '24px'})
                     ],
-                    style={"height": "5vh", 'margin': '0px'},
+                    style={"height": "5vh", 'margin': '8px'},
                     className='bg-primary text-white font-italic'
                 ),
 
@@ -197,19 +190,19 @@ class ViewGui:
                             html.Div([
                                 html.Label('E2ED 1 GW selection'),
                                 dcc.Slider(1, 2, 1, value=self.ed_1_gw_selection, id='ed-1-gw-selection'),
-                                # html.Div(id='boolean-slider-output-1')
+                                html.Div(id='boolean-slider-output-1')
                             ]),
 
                             html.Div([
                                 html.Label('E2ED 2 GW selection'),
                                 dcc.Slider(1, 2, 1, value=self.ed_2_gw_selection, id='ed-2-gw-selection'),
-                                # html.Div(id='boolean-slider-output-2')
+                                html.Div(id='boolean-slider-output-2')
                             ]),
 
                             html.Div([
                                 html.Label('E2ED 3 GW selection'),
                                 dcc.Slider(1, 2, 1, value=self.ed_3_gw_selection, id='ed-3-gw-selection'),
-                                # html.Div(id='boolean-slider-output-3')
+                                html.Div(id='boolean-slider-output-3')
                             ]),
 
 
@@ -251,16 +244,11 @@ class ViewGui:
                                         className='bg-dark text-white'),
                             # html.Button('Update processing configuration', id='updateProcessingConfigurationButton', style={'text-align': 'center', 'vertical-align': 'middle', }),
                             html.Div(id='updateProcessingConfigurationDiv'),
-                            html.Hr(),
-
-                            html.Label('AGGREGATION RESULT'),
-                            dcc.Markdown(children="0", id='aggregation_result_id', style={'margin-top': '6px', 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-white'),
-
-
+                            html.Hr()
                         ]
                         )
                     ],
-                    style={'height': '50vh', 'margin': '16px'}),
+                    style={'height': '50vh', 'margin': '8px'}),
             ]
 
         )
@@ -433,10 +421,9 @@ class ViewGui:
                     edge_y.append(y1)
                     edge_y.append(None)
 
-                print("test new line")
-                print(n)
-                print(edge_x)
-                print(edge_y)
+                # print(edge_x)
+                # print(edge_y)
+
 
                 edge_trace_E2LE = go.Scatter(
                     x=edge_x, y=edge_y,
@@ -611,8 +598,8 @@ class ViewGui:
             pass
 
 
-        @self.app.callback([Output('lora-traffic-graph', 'figure'), Output('aggregation_result_id', 'children')],
-                           [Input('interval-component', 'n_intervals')])
+        @self.app.callback(Output('lora-traffic-graph', 'figure'),
+                           Input('interval-component', 'n_intervals'))
         def update_lora_traffic_graph_live(n):
 
             # print("Update graph : ", controllerGRPC.gw_1_received_frame_num)
@@ -625,8 +612,7 @@ class ViewGui:
                     vertical_spacing=0.09,
                 )
 
-
-                ble_plot_colors = ["red", "blue", "black", "green", "orange"]
+                ble_plot_colors = ["red", "green", "blue", "orange", "black"]
                 # print(list(controllerGRPC.legacy_gw_received_frame_num))
                 # print(list(controllerGRPC.E2L_gw_received_frame_num))
 
@@ -634,7 +620,6 @@ class ViewGui:
                 gw_1_transmitted_frame_num = list(controllerGRPC.gw_1_transmitted_frame_num)
                 gw_2_received_frame_num = list(controllerGRPC.gw_2_received_frame_num)
                 gw_2_transmitted_frame_num = list(controllerGRPC.gw_2_transmitted_frame_num)
-                module_received_frame_frame_num = list(controllerGRPC.module_received_frame_frame_num)
 
                 timetsamp_list = list(range(len(gw_1_received_frame_num)))
 
@@ -643,92 +628,81 @@ class ViewGui:
                                          ), row=1, col=1,
                               )
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_1_transmitted_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[0]),  name="TX_GW1",
-                                         marker=dict(symbol="triangle-up", size=12),
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[1]), name="TX_GW1"
                                          ), row=1, col=1,
                               )
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_2_received_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[1]), name="RX_GW2"
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[2]), name="RX_GW2"
                                          ), row=1, col=1,
                               )
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_2_transmitted_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[1]), name="TX_GW2",
-                                        marker = dict(symbol="triangle-up", size=12),
-                                        ), row=1, col=1,
-                              )
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=module_received_frame_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[2], dash = 'dash'), name="RX_DM"
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[3]), name="TX_GW2"
                                          ), row=1, col=1,
                               )
 
-                # ns_received_frame_frame_num = list(controllerGRPC.ns_received_frame_frame_num)
-                # ns_transmitted_frame_frame_num = list(controllerGRPC.ns_transmitted_frame_frame_num)
-                #
-                # fig.add_trace(go.Scatter(x=timetsamp_list, y=ns_received_frame_frame_num,
-                #                          mode='lines+markers', line=dict(color=ble_plot_colors[0]), name="RX_NS"
-                #                          ), row=2, col=1,
-                #               )
-                # fig.add_trace(go.Scatter(x=timetsamp_list, y=ns_transmitted_frame_frame_num,
-                #                          mode='lines+markers', line=dict(color=ble_plot_colors[1]), name="TX_NS"
-                #                          ), row=2, col=1,
-                #               )
-
-                stream_reduction = np.array(controllerGRPC.module_received_frame_frame_num) / (np.array(gw_1_transmitted_frame_num) + np.array(gw_2_transmitted_frame_num)) * 100
-
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=stream_reduction,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[3], dash = 'dot',), name="Stream redcution"
+                ns_received_frame_frame_num = list(controllerGRPC.ns_received_frame_frame_num)
+                ns_transmitted_frame_frame_num = list(controllerGRPC.ns_transmitted_frame_frame_num)
+                module_received_frame_frame_num = list(controllerGRPC.module_received_frame_frame_num)
+                fig.add_trace(go.Scatter(x=timetsamp_list, y=ns_received_frame_frame_num,
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[0]), name="RX_NS"
+                                         ), row=2, col=1,
+                              )
+                fig.add_trace(go.Scatter(x=timetsamp_list, y=ns_transmitted_frame_frame_num,
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[1]), name="TX_NS"
+                                         ), row=2, col=1,
+                              )
+                fig.add_trace(go.Scatter(x=timetsamp_list, y=module_received_frame_frame_num,
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[2]), name="RX_DM"
                                          ), row=2, col=1,
                               )
 
-
-                fig.update_yaxes(row=1, col=1, title_text='Number of Frames', range=[-0.3, 6])
-                fig.update_yaxes(row=2, col=1, title_text='Stream Frame Reduction [%]', range=[0, 100])
+                fig.update_yaxes(row=1, col=1, title_text='GW 1/2 Statistics')
+                fig.update_yaxes(row=2, col=1, title_text='NS/DM Statistics')
                 fig.update_layout( margin=dict(l=10, r=10, t=10, b=10), )
 
                 fig.update_layout(legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01 ))
                 # print("end update")
-                return fig, str(controllerGRPC.aggregation_function_result[-1])
-
+                return fig
 
             except Exception as e:
                 traceback.print_exc()
                 pass
 
-        # @self.app.callback(
-        #     Output('boolean-slider-output-1', 'children'),
-        #     Input('ed-1-gw-selection', 'value')
-        # )
-        # def update_output(selection):
-        #     controllerGRPC.ed_1_gw_selection=selection
-        #     return f'The slider is {selection}.'
-        #
-        # @self.app.callback(
-        #     Output('boolean-slider-output-2', 'children'),
-        #     Input('ed-2-gw-selection', 'value')
-        # )
-        # def update_output(selection):
-        #     controllerGRPC.ed_2_gw_selection=selection
-        #     return f'The slider is {selection}.'
-        #
-        # @self.app.callback(
-        #     Output('boolean-slider-output-3', 'children'),
-        #     Input('ed-3-gw-selection', 'value')
-        # )
-        # def update_output(selection):
-        #     controllerGRPC.ed_3_gw_selection=selection
-        #     return f'The slider is {selection}.'
+        @self.app.callback(
+            Output('boolean-slider-output-1', 'children'),
+            Input('ed-1-gw-selection', 'value')
+        )
+        def update_output(selection):
+            controllerGRPC.ed_1_gw_selection=selection
+            return f'The slider is {selection}.'
 
         @self.app.callback(
-            #Output('updateScenarioConfigurationDiv', 'children'),
+            Output('boolean-slider-output-2', 'children'),
+            Input('ed-2-gw-selection', 'value')
+        )
+        def update_output(selection):
+            controllerGRPC.ed_2_gw_selection=selection
+            return f'The slider is {selection}.'
+
+        @self.app.callback(
+            Output('boolean-slider-output-3', 'children'),
+            Input('ed-3-gw-selection', 'value')
+        )
+        def update_output(selection):
+            controllerGRPC.ed_3_gw_selection=selection
+            return f'The slider is {selection}.'
+
+        @self.app.callback(
+            Output('updateScenarioConfigurationDiv', 'children'),
             Input('updateScenarioConfigurationButton', 'n_clicks'),
             prevent_initial_call=True
         )
         def update_output(n_clicks):
             controllerGRPC.start_key_agreement_process = 1
-            return #'the button has been clicked {} times'.format(n_clicks)
+            return 'the button has been clicked {} times'.format(n_clicks)
 
         @self.app.callback(
-            #Output('updateProcessingConfigurationDiv', 'children'),
+            Output('updateProcessingConfigurationDiv', 'children'),
             [Input('updateProcessingConfigurationButton', 'n_clicks'),
              Input('processing-function-dropdown', 'value'), Input('processing-window-dropdown', 'value')],
             prevent_initial_call=True
@@ -737,7 +711,7 @@ class ViewGui:
             controllerGRPC.change_processing_configuraiton = 1
             controllerGRPC.process_function = processingFunction
             controllerGRPC.process_window = int(processingWindow)
-            return #'the button has been clicked {} times'.format(n_clicks)
+            return 'the button has been clicked {} times'.format(n_clicks)
 
         @self.app.callback(
             [Output("session", "data"),
@@ -759,14 +733,12 @@ class ViewGui:
                     return_messaage_ed = controllerGRPC.devices_key_agreement_message_log
                     return_messaage_formatted = "[{}] {}".format(datetime_last, return_messaage_ed)
                     self.logDevices.append(return_messaage_formatted)
-                    print("test logdevices")
-                    print(self.logDevices)
 
                 html_return_content_ed = []
                 for ii in range(len(self.logDevices)):
                     html_return_content_ed.append(html.Div(self.logDevices[ii], style={"font-weight": "bold"}))
                     # html_return_content.append(html.P("[{}] ".format("AUDIO MESSAGE"), style={"font-weight": "bold", "color":"red"}))
-                    # html_return_content_ed.append(html.Br())
+                    html_return_content_ed.append(html.Br())
 
                 if controllerGRPC.gw_key_agreement_message_log_updated:
                     controllerGRPC.gw_key_agreement_message_log_updated = 0
@@ -778,7 +750,7 @@ class ViewGui:
                 for ii in range(len(self.logGateways)):
                     html_return_content_gw.append(html.Div(self.logGateways[ii], style={"font-weight": "bold"}))
                     # html_return_content.append(html.P("[{}] ".format("AUDIO MESSAGE"), style={"font-weight": "bold", "color":"red"}))
-                    # html_return_content_gw.append(html.Br())
+                    html_return_content_gw.append(html.Br())
 
                 if controllerGRPC.module_key_agreement_message_updated:
                     controllerGRPC.module_key_agreement_message_updated = 0
@@ -790,7 +762,7 @@ class ViewGui:
                 for ii in range(len(self.logDistributed)):
                     html_return_content_ds.append(html.Div(self.logDistributed[ii], style={"font-weight": "bold"}))
                     # html_return_content.append(html.P("[{}] ".format("AUDIO MESSAGE"), style={"font-weight": "bold", "color":"red"}))
-                    # html_return_content_ds.append(html.Br())
+                    html_return_content_ds.append(html.Br())
 
                 return data, html.Div(html_return_content_ed), html.Div(html_return_content_gw), html.Div(html_return_content_ds)
 

@@ -101,7 +101,9 @@ class ViewGui:
                           ['ED_1', 'E2L_GW_2'], ['ED_2', 'E2L_GW_2'],
                           ['E2D_1', 'E2L_GW_2'], ['E2D_2', 'E2L_GW_2'], ['E2D_3', 'E2L_GW_2'],
                           ['E2L_GW_1', 'NS'], ['E2L_GW_2', 'NS'],
-                          ['NS', 'DS'] ])
+                          ['NS', 'DS'],
+                          ['E2L_GW_1', 'DS'], ['E2L_GW_2', 'DS']
+                          ])
         self.G = nx.Graph()
         # print("1: ", self.G.nodes())
         # IG = InteractiveGraph(G) #>>>>> add this line in the next step
@@ -163,6 +165,27 @@ class ViewGui:
                         "height": "80px", "width": "auto", "margin-bottom": "1px", 'display': 'inline-block', 'text-align': 'center'
                     },
                 ),
+                html.Div(
+                    [
+                        html.Img(
+                            src=self.app.get_asset_url("edge2lora-icon-trasparent.png"),
+                            id="plotly-image-edge2lora",
+                            style={
+                                "height": "90px", "width": "auto", "margin-bottom": "1px", 'display': 'inline-block', 'text-align': 'center'
+                            },
+                        ),
+                        html.Img(
+                            src=self.app.get_asset_url("qr-code-edge2lora.png"),
+                            id="plotly-image-qrcode",
+                            style={
+                                "height": "90px", "width": "auto", "margin-bottom": "1px", 'display': 'inline-block', 'text-align': 'center'},
+                        ),
+                    ],
+                    className="one-third column",
+                    style={
+                        "height": "80px", "width": "auto", "margin-bottom": "1px", 'display': 'inline-block', 'text-align': 'center'
+                    },
+                ),
 
             ],
             id="header",
@@ -172,19 +195,16 @@ class ViewGui:
 
         sidebar = html.Div(
             [
-
-                dbc.Row(
-                    [
-                    ],
-                    style={"height": "1vh", 'margin': '0px'},
+                dbc.Row( [ ],
+                    style={"height": "1vh", 'margin-left': '-8px'},
                     className='bg-white'
                 ),
 
                 dbc.Row(
                     [
-                        html.H6('Settings', style={'margin-top': '12px', 'margin-left': '24px'})
+                        html.H6('Settings', style={'margin-top': '12px', 'margin-left': '12px'})
                     ],
-                    style={"height": "5vh", 'margin': '0px'},
+                    style={"height": "5vh",  'margin-left': '-8px'},
                     className='bg-primary text-white font-italic'
                 ),
 
@@ -254,15 +274,15 @@ class ViewGui:
                             html.Hr(),
 
                             html.Label('AGGREGATION RESULT'),
-                            dcc.Markdown(children="0", id='aggregation_result_id', style={'margin-top': '6px', 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-white'),
-
+                            dcc.Markdown(children="0", id='aggregation_result_id', style={'margin-top': '6px', 'text-align': 'center', 'vertical-align': 'middle'},
+                                         className='bg-white'),
 
                         ]
                         )
                     ],
-                    style={'height': '50vh', 'margin': '16px'}),
-            ]
-
+                    style = {'height': '50vh', 'margin': '0px'}),
+            ],
+            style = {'margin': '0px'},
         )
         content = html.Div(
             [
@@ -270,11 +290,15 @@ class ViewGui:
                     [
                         dbc.Col(
                             [
+                                # dbc.Row([],
+                                #         style={"height": "1vh", 'margin-left': '0px'},
+                                #         className='bg-white'
+                                #         ),
                                 dbc.Row(
                                     [
-                                        html.H6('Network topology', style={'margin-top': '12px', 'margin-left': '24px'})
+                                        html.H6('Network topology', style={'margin-top': '12px', 'margin-left': '12px'})
                                     ],
-                                    style={'margin': '8px'},
+                                    style={"height": "5vh", 'margin': '8px', 'margin-top': '10px'},
                                     className='bg-primary text-white font-italic'
                                 ),
                                 dbc.Row(
@@ -286,11 +310,15 @@ class ViewGui:
                             ]),
                         dbc.Col(
                             [
+                                # dbc.Row([],
+                                #         style={"height": "1vh", 'margin-left': '0px'},
+                                #         className='bg-white'
+                                #         ),
                                 dbc.Row(
                                     [
-                                        html.H6('Traffic', style={'margin-top': '12px', 'margin-left': '24px'})
+                                        html.H6('Traffic', style={'margin-top': '12px', 'margin-left': '12px'})
                                     ],
-                                    style={'margin': '8px'},
+                                    style={"height": "5vh",  'margin': '8px', 'margin-top': '10px'},
                                     className='bg-primary text-white font-italic'
                                 ),
                                 dbc.Row(
@@ -368,7 +396,7 @@ class ViewGui:
 
                 dbc.Row(
                     [
-                        dbc.Col(sidebar, width=0, className='bg-light'),
+                        dbc.Col(sidebar, width=0, className='bg-light', style={'margin': '0px'} ),
                         dbc.Col(content, width=10, className='bg-white')
                     ],
                     style={"height": "90vh", 'margin': '18px'}
@@ -433,28 +461,119 @@ class ViewGui:
                     edge_y.append(y1)
                     edge_y.append(None)
 
-                print("test new line")
-                print(n)
-                print(edge_x)
-                print(edge_y)
-
                 edge_trace_E2LE = go.Scatter(
-                    x=edge_x, y=edge_y,
+                    x=edge_x[:12], y=edge_y[:12],
                     name="Wireless link",
                     # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color='firebrick', width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
+                    line=dict(color='darkgrey', width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
 
-                edge_trace_E2LO = go.Scatter(
-                    x=edge_x, y=edge_y,
-                    # name="Edge link",
+                print("view")
+                print(controllerGRPC.ed_1_gw_selection_confirmed)
+
+                if controllerGRPC.ed_1_gw_selection_confirmed==1:
+                    colorEdgeEd_1_gw_1 = 'darkblue'
+                    colorEdgeEd_1_gw_2 = 'darkgrey'
+                    width_gw1 = 3
+                    width_gw2 = 0
+                elif controllerGRPC.ed_1_gw_selection_confirmed==2:
+                    colorEdgeEd_1_gw_1 = 'darkgrey'
+                    colorEdgeEd_1_gw_2 = 'darkblue'
+                    width_gw1 = 0
+                    width_gw2 = 3
+                else:
+                    colorEdgeEd_1_gw_1 = 'darkgrey'
+                    colorEdgeEd_1_gw_2 = 'darkgrey'
+                    width_gw1 = 0
+                    width_gw2 = 0
+                edge_trace_E2E1_GW1 = go.Scatter(
+                    x=edge_x[12:15], y=edge_y[12:15],
+                    # name="Wireless link",
                     # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color='firebrick', width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
-
-                edge_trace_CLOUD = go.Scatter(
-                    x=edge_x, y=edge_y,
+                    line=dict(color=colorEdgeEd_1_gw_1, width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
+                edge_trace_E2E1_GW2 = go.Scatter(
+                    x=edge_x[15:18], y=edge_y[15:18],
+                    # name="Wireless link",
+                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
+                    line=dict(color=colorEdgeEd_1_gw_2, width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
+                edge_trace_GW1_EDGE = go.Scatter(
+                    x=edge_x[39:42], y=edge_y[39:42],
                     # name="Cloud",
                     # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color='firebrick', width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
+                    line=dict(color=colorEdgeEd_1_gw_1, width=width_gw1)) # dash options include 'dash', 'dot', and 'dashdot'
+                edge_trace_GW2_EDGE = go.Scatter(
+                    x=edge_x[33:36], y=edge_y[33:36],
+                    # name="Cloud",
+                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
+                    line=dict(color=colorEdgeEd_1_gw_2, width=width_gw2))  # dash options include 'dash', 'dot', and 'dashdot'
+
+                # if controllerGRPC.ed_2_gw_selection_confirmed==1:
+                #     colorEdgeEd_2_gw_1 = 'darkcyan'
+                #     colorEdgeEd_2_gw_2 = 'darkgrey'
+                # elif controllerGRPC.ed_2_gw_selection_confirmed==2:
+                #     colorEdgeEd_2_gw_1 = 'darkgrey'
+                #     colorEdgeEd_2_gw_2 = 'darkcyan'
+                # else:
+                if True:
+                    colorEdgeEd_2_gw_1 = 'darkgrey'
+                    colorEdgeEd_2_gw_2 = 'darkgrey'
+                edge_trace_E2E2_GW1 = go.Scatter(
+                    x=edge_x[18:21], y=edge_y[18:21],
+                    # name="Wireless link",
+                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
+                    line=dict(color=colorEdgeEd_2_gw_1, width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
+                edge_trace_E2E2_GW2 = go.Scatter(
+                    x=edge_x[21:24], y=edge_y[21:24],
+                    # name="Wireless link",
+                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
+                    line=dict(color=colorEdgeEd_2_gw_2, width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
+
+
+
+                # if controllerGRPC.ed_3_gw_selection_confirmed==1:
+                #     colorEdgeEd_3_gw_1 = 'darkgreen'
+                #     colorEdgeEd_3_gw_2 = 'darkgrey'
+                # elif controllerGRPC.ed_3_gw_selection_confirmed==2:
+                #     colorEdgeEd_3_gw_1 = 'darkgrey'
+                #     colorEdgeEd_3_gw_2 = 'darkgreen'
+                # else:
+                if True:
+                    colorEdgeEd_3_gw_1 = 'darkgrey'
+                    colorEdgeEd_3_gw_2 = 'darkgrey'
+                edge_trace_E2E3_GW1 = go.Scatter(
+                    x=edge_x[24:27], y=edge_y[24:27],
+                    # name="Wireless link",
+                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
+                    line=dict(color=colorEdgeEd_3_gw_1, width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
+                edge_trace_E2E3_GW2 = go.Scatter(
+                    x=edge_x[27:30], y=edge_y[27:30],
+                    # name="Wireless link",
+                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
+                    line=dict(color=colorEdgeEd_3_gw_2, width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
+
+                # edge_trace_E2LO = go.Scatter(
+                #     x=edge_x, y=edge_y,
+                #     # name="Edge link",
+                #     # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
+                #     line=dict(color='firebrick', width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
+                #
+
+                edge_trace_GW2_NS = go.Scatter(
+                    x=edge_x[30:33], y=edge_y[30:33],
+                    # name="Cloud",
+                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
+                    line=dict(color='darkgray', width=2))  # dash options include 'dash', 'dot', and 'dashdot'
+
+                edge_trace_GW1_NS = go.Scatter(
+                    x=edge_x[36:39], y=edge_y[36:39],
+                    # name="Cloud",
+                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
+                    line=dict(color='darkgrey', width=2)) # dash options include 'dash', 'dot', and 'dashdot'
+
+                edge_trace_NS_DS = go.Scatter(
+                    x=edge_x[42:45], y=edge_y[42:45],
+                    # name="Cloud",
+                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
+                    line=dict(color='darkgrey', width=2)) # dash options include 'dash', 'dot', and 'dashdot'
 
                 node_trace_ED_legacy = go.Scatter(
                     x=node_x[:2], y=node_y[:2],
@@ -469,7 +588,7 @@ class ViewGui:
                         # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
                         colorscale='YlGnBu',
                         reversescale=True,
-                        color='LightSkyBlue',
+                        color='#FFFFD9',
                         size=40,
                         colorbar=dict(
                             thickness=15,
@@ -477,7 +596,7 @@ class ViewGui:
                             xanchor='left',
                             titleside='right'
                         ),
-                        line=dict( color='MediumPurple', width=3, ),
+                        line=dict( color='#434746', width=3, ),
                         symbol="circle",
                         ))
 
@@ -494,7 +613,7 @@ class ViewGui:
                         # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
                         colorscale='YlGnBu',
                         reversescale=False,
-                        color='LightSkyBlue',
+                        color='#96D7BA',
                         size=40,
                         colorbar=dict(
                             thickness=15,
@@ -503,13 +622,13 @@ class ViewGui:
                             titleside='right'
                         ),
                         symbol="star",
-                        line=dict( color='MediumPurple', width=3, ),
+                        line=dict( color='#434746', width=3, ),
                     ))
 
-                node_trace_GW = go.Scatter(
-                    x=node_x[5:7], y=node_y[5:7],
+                node_trace_GW_1 = go.Scatter(
+                    x=node_x[5:6], y=node_y[5:6],
                     mode='markers',
-                    name='E2L GW',
+                    name='E2L GW 1',
                     hoverinfo='text',
                     marker=dict(
                         showscale=False,
@@ -519,7 +638,7 @@ class ViewGui:
                         # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
                         colorscale='YlGnBu',
                         reversescale=True,
-                        color='LightSkyBlue',
+                        color='red',
                         size=40,
                         colorbar=dict(
                             thickness=15,
@@ -527,9 +646,37 @@ class ViewGui:
                             xanchor='left',
                             titleside='right'
                         ),
-                        symbol="star-triangle-up",
-                        line=dict(color='MediumPurple', width=3, ),
+                        symbol="triangle-up",
+                        line=dict(color="#434746", width=3, ),
                     ))
+
+
+                node_trace_GW_2 = go.Scatter(
+                    x=node_x[6:7], y=node_y[6:7],
+                    mode='markers',
+                    name='E2L GW 2',
+                    hoverinfo='text',
+                    marker=dict(
+                        showscale=False,
+                        # colorscale options
+                        # 'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
+                        # 'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
+                        # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
+                        colorscale='YlGnBu',
+                        reversescale=True,
+                        color='blue',
+                        size=40,
+                        colorbar=dict(
+                            thickness=15,
+                            title='Node Connections',
+                            xanchor='left',
+                            titleside='right'
+                        ),
+                        symbol="triangle-up",
+                        # line=dict(color='MediumPurple', width=3, ),
+                    ))
+
+
 
                 node_trace_NS = go.Scatter(
                     x=node_x[7:8], y=node_y[7:8],
@@ -544,7 +691,7 @@ class ViewGui:
                         # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
                         colorscale='YlGnBu',
                         reversescale=True,
-                        color='LightSkyBlue',
+                        color='#071D57',
                         size=40,
                         colorbar=dict(
                             thickness=15,
@@ -553,7 +700,7 @@ class ViewGui:
                             titleside='right'
                         ),
                         symbol="square",
-                        line=dict(color='MediumPurple', width=3, ),
+                        line=dict(color='#434746', width=3, ),
                     ))
 
                 node_trace_DS = go.Scatter(
@@ -569,7 +716,7 @@ class ViewGui:
                         # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
                         colorscale='Viridis',
                         reversescale=False,
-                        color='LightSkyBlue',
+                        color='#207FB7',
                         size=40,
                         colorbar=dict(
                             thickness=15,
@@ -578,7 +725,7 @@ class ViewGui:
                             titleside='right'
                         ),
                         symbol="diamond",
-                        line=dict(color='MediumPurple', width=3, ),
+                        line=dict(color='#434746', width=3, ),
                     ))
 
                 node_adjacencies = []
@@ -590,7 +737,19 @@ class ViewGui:
                 # node_trace_EDL.marker.color = node_adjacencies
                 node_trace_EDL.text = node_text
 
-                fig = go.Figure(data=[edge_trace_E2LE, edge_trace_E2LO, edge_trace_CLOUD, node_trace_ED_legacy, node_trace_EDL, node_trace_GW, node_trace_NS, node_trace_DS],
+                fig = go.Figure(data=[edge_trace_E2LE,
+                                      edge_trace_E2E1_GW1, edge_trace_E2E1_GW2,
+                                      edge_trace_E2E2_GW1, edge_trace_E2E2_GW2,
+                                      edge_trace_E2E3_GW1, edge_trace_E2E3_GW2,
+                                      edge_trace_GW1_EDGE,
+                                      edge_trace_GW2_EDGE,
+                                      edge_trace_GW1_NS,
+                                      edge_trace_GW2_NS,
+                                      edge_trace_NS_DS,
+                                      node_trace_ED_legacy, node_trace_EDL,
+                                      node_trace_GW_1, node_trace_GW_2,
+                                      node_trace_NS, node_trace_DS,
+                                      ],
                                 layout=go.Layout(
                                     showlegend=True,
                                     hovermode='closest',
@@ -600,9 +759,25 @@ class ViewGui:
                                 )
 
                 fig.update_layout(
-                    legend=dict( x=0.4, y=0.99, traceorder="normal", font=dict( family="sans-serif", size=12, color="blue" )) #, orientation='h',)
+                    legend=dict( x=0.4, y=0.99, traceorder="normal", font=dict( family="sans-serif", size=12, color="blue" ), orientation='h',)
                     # legend=dict(yanchor="top", y=0.01, xanchor="left", x=0.01 )
                 )
+
+                fig['data'][0]['showlegend'] = False
+                fig['data'][1]['showlegend'] = False
+                fig['data'][2]['showlegend'] = False
+                fig['data'][3]['showlegend'] = False
+                fig['data'][4]['showlegend'] = False
+                fig['data'][5]['showlegend'] = False
+                fig['data'][6]['showlegend'] = False
+                fig['data'][7]['showlegend'] = False
+                fig['data'][8]['showlegend'] = False
+                fig['data'][9]['showlegend'] = False
+                fig['data'][10]['showlegend'] = False
+                fig['data'][11]['showlegend'] = False
+
+                fig.update_layout( margin=dict(l=10, r=10, t=10, b=10), )
+
 
                 return fig
 
@@ -624,7 +799,6 @@ class ViewGui:
                     shared_xaxes=True,
                     vertical_spacing=0.09,
                 )
-
 
                 ble_plot_colors = ["red", "blue", "black", "green", "orange"]
                 # print(list(controllerGRPC.legacy_gw_received_frame_num))
@@ -676,10 +850,9 @@ class ViewGui:
                 stream_reduction = np.array(controllerGRPC.module_received_frame_frame_num) / (np.array(gw_1_transmitted_frame_num) + np.array(gw_2_transmitted_frame_num)) * 100
 
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=stream_reduction,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[3], dash = 'dot',), name="Stream redcution"
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[3], dash='dot', ), name="Stream redcution"
                                          ), row=2, col=1,
                               )
-
 
                 fig.update_yaxes(row=1, col=1, title_text='Number of Frames', range=[-0.3, 6])
                 fig.update_yaxes(row=2, col=1, title_text='Stream Frame Reduction [%]', range=[0, 100])
@@ -689,8 +862,8 @@ class ViewGui:
                 # print("end update")
                 return fig, str(controllerGRPC.aggregation_function_result[-1])
 
-
             except Exception as e:
+                print("exception triggered")
                 traceback.print_exc()
                 pass
 
@@ -719,16 +892,17 @@ class ViewGui:
         #     return f'The slider is {selection}.'
 
         @self.app.callback(
-            #Output('updateScenarioConfigurationDiv', 'children'),
+            Output('updateScenarioConfigurationDiv', 'children'),
             Input('updateScenarioConfigurationButton', 'n_clicks'),
             prevent_initial_call=True
         )
         def update_output(n_clicks):
             controllerGRPC.start_key_agreement_process = 1
-            return #'the button has been clicked {} times'.format(n_clicks)
+            # return 'the button has been clicked {} times'.format(n_clicks)
+            return ''
 
         @self.app.callback(
-            #Output('updateProcessingConfigurationDiv', 'children'),
+            Output('updateProcessingConfigurationDiv', 'children'),
             [Input('updateProcessingConfigurationButton', 'n_clicks'),
              Input('processing-function-dropdown', 'value'), Input('processing-window-dropdown', 'value')],
             prevent_initial_call=True
@@ -737,7 +911,8 @@ class ViewGui:
             controllerGRPC.change_processing_configuraiton = 1
             controllerGRPC.process_function = processingFunction
             controllerGRPC.process_window = int(processingWindow)
-            return #'the button has been clicked {} times'.format(n_clicks)
+            # return 'the button has been clicked {} times'.format(n_clicks)
+            return ''
 
         @self.app.callback(
             [Output("session", "data"),
@@ -759,8 +934,6 @@ class ViewGui:
                     return_messaage_ed = controllerGRPC.devices_key_agreement_message_log
                     return_messaage_formatted = "[{}] {}".format(datetime_last, return_messaage_ed)
                     self.logDevices.append(return_messaage_formatted)
-                    print("test logdevices")
-                    print(self.logDevices)
 
                 html_return_content_ed = []
                 for ii in range(len(self.logDevices)):

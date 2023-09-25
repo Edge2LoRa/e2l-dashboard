@@ -2,7 +2,8 @@
 import time
 
 from Controller.ControllerGRPC import ControllerGRPC
-from View.View import ViewGui
+# from View.View import ViewGui
+from View.View_v0_6 import ViewGui
 # from Model.AdaptiveAlgorithm import AdaptiveAlgorithm
 import logging
 

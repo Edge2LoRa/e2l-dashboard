@@ -28,7 +28,8 @@ __all__ = [
     "bidirectional_streaming_method",
 ]
 
-SERVER_ADDRESS = "lab.tti.unipa.it:23333"
+# SERVER_ADDRESS = "lab.tti.unipa.it:23333"
+SERVER_ADDRESS = "localhost:23333"
 CLIENT_ID = 1
 
 gw_1_received_frame_num_old = 0
@@ -42,8 +43,8 @@ module_received_frame_frame_num_old = 0
 # In all cases, the Chinese comment text is translated to English just below it.
 
 def send_join_update_message(stub):
-  ed_id = [1, 3, 3, 3, 1, 3, 1, 3, 3, 3, 1, 3, 1, 3, 3, 3, 1, 3, 1]
-  gw_id = [1, 1, 2, 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+  ed_id = [1, 1, 1, 1, 1, 1, 1, 1, 1, ]
+  gw_id = [1, 2, 2, 1, 2, 2, 1, 1, 2, ]
   for ii in range(5):
     request = demo_pb2.SendJoinUpdateMessage(
       client_id=CLIENT_ID,
@@ -95,7 +96,7 @@ def send_join_update_message(stub):
 # unary-unary(In a single call, the client can only send request once, and the server can
 # only respond once.)
 def send_log_message(stub):
-    log_id = [1, 3, 3, 3, 1, 3, 1, 3, 3, 3, 1, 3, 1, 3, 3, 3, 1, 3, 1]
+    log_id = [1, 3, 2, 3, 1, 3, 1, 2, 3, 3, 1, 3, 1, 2, 2, 3, 1, 3, 1]
     log_message = ["Added GW info in DM active directory",
                    "Starting Edge Join", "Send EdgeJoinRequest", "Received EdgeAcceptRequest",
                    "Received Device 007599CB Public Info",
@@ -113,14 +114,14 @@ def send_log_message(stub):
             message_data="called by Python client",
             key_agreement_log_message_node_id = log_id[ii],
             key_agreement_message_log = log_message[ii],
-            key_agreement_process_time = random.randint(3, 9),
+            key_agreement_process_time = random.randint(2, 5),
         )
         response = stub.SimpleMethodsLogMessage(request)
         print(
             "resp from server(%d), the message=%s"
             % (response.server_id, response.response_data)
         )
-        time.sleep(2)
+        time.sleep(1)
 
     #
     # time.sleep(2)
@@ -178,7 +179,7 @@ def send_statistics(stub):
                 ns_received_frame_frame_num = 0,
                 ns_transmitted_frame_frame_num = 0,
                 module_received_frame_frame_num = module_received_frame_frame_num_old,
-                aggregation_function_result = random.randint(3, 9),
+                aggregation_function_result = random.randint(2, 5),
             )
             yield request
             print(i)
@@ -261,18 +262,18 @@ def main():
 
         for ii in range(100):
           send_join_update_message(stub)
-          time.sleep(3)
-
-          # send_log_message(stub)
           # time.sleep(3)
-          #
-          # gw_1_received_frame_num_old += random.randint(3, 9)
-          # gw_1_transmitted_frame_num_old += random.randint(3, 9)
-          # gw_2_received_frame_num_old += random.randint(3, 9)
-          # gw_2_transmitted_frame_num_old += random.randint(3, 9)
-          # module_received_frame_frame_num_old += random.randint(3, 9)
-          #
-          # send_statistics(stub)
+
+          send_log_message(stub)
+          # time.sleep(3)
+
+          gw_1_received_frame_num_old += random.randint(2, 5)
+          gw_1_transmitted_frame_num_old += random.randint(2, 5)
+          gw_2_received_frame_num_old += random.randint(2, 5)
+          gw_2_transmitted_frame_num_old += random.randint(2, 5)
+          module_received_frame_frame_num_old += random.randint(2, 5)
+
+          send_statistics(stub)
 
         #
         # server_streaming_method(stub)
