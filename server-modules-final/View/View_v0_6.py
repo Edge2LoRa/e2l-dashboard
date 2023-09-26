@@ -88,7 +88,7 @@ class ViewGui:
         self.app.title = "EDGE2LORA DEMO (MOBICOM 2023)"
 
         self.processingFunctions = ["mean", "max", "min", "std"]
-        self.processingWindows = [10, 20, 30, 40, 50, 60]
+        self.processingWindows = [1, 2, 4, 8, 10, 20]
 
         # self.G = nx.random_geometric_graph(8, 0.125)
 
@@ -218,19 +218,19 @@ class ViewGui:
                             html.Div([
                                 html.Label('E2ED 1 GW selection'),
                                 dcc.Slider(1, 2, 1, value=self.ed_1_gw_selection, id='ed-1-gw-selection'),
-                                # html.Div(id='boolean-slider-output-1')
+                                html.Div(id='boolean-slider-output-1')
                             ]),
 
                             html.Div([
                                 html.Label('E2ED 2 GW selection'),
                                 dcc.Slider(1, 2, 1, value=self.ed_2_gw_selection, id='ed-2-gw-selection'),
-                                # html.Div(id='boolean-slider-output-2')
+                                html.Div(id='boolean-slider-output-2')
                             ]),
 
                             html.Div([
                                 html.Label('E2ED 3 GW selection'),
                                 dcc.Slider(1, 2, 1, value=self.ed_3_gw_selection, id='ed-3-gw-selection'),
-                                # html.Div(id='boolean-slider-output-3')
+                                html.Div(id='boolean-slider-output-3')
                             ]),
 
 
@@ -940,17 +940,17 @@ class ViewGui:
                     # controllerGRPC.device_key_agreement_message_updated = 0
 
                     html_return_content_gw1 = []
-                    for ii in range(len(controllerGRPC.key_agreement_message_log_gw1)):
+                    for ii in range(len(controllerGRPC.key_agreement_message_log_gw1)-1,0,-1):
                         html_return_content_gw1.append(html.Div(controllerGRPC.key_agreement_message_log_gw1[ii], style={"font-weight": "bold"}))
 
                     html_return_content_gw2 = []
-                    for ii in range(len(controllerGRPC.key_agreement_message_log_gw2)):
+                    for ii in range(len(controllerGRPC.key_agreement_message_log_gw2)-1,0,-1):
                         html_return_content_gw2.append(html.Div(controllerGRPC.key_agreement_message_log_gw2[ii], style={"font-weight": "bold"}))
                         # html_return_content.append(html.P("[{}] ".format("AUDIO MESSAGE"), style={"font-weight": "bold", "color":"red"}))
                         # html_return_content_gw.append(html.Br())
 
                     html_return_content_device = []
-                    for ii in range(len(controllerGRPC.key_agreement_message_log_ed)):
+                    for ii in range(len(controllerGRPC.key_agreement_message_log_ed)-1,0,-1):
                         html_return_content_device.append(html.Div(controllerGRPC.key_agreement_message_log_ed[ii], style={"font-weight": "bold"}))
 
                 return data, html.Div(html_return_content_gw1), html.Div(html_return_content_gw2), html.Div(html_return_content_device)
