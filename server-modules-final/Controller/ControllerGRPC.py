@@ -1,11 +1,11 @@
-from datetime import datetime
+import datetime
+from datetime import datetime, timedelta, date
 import pandas as pd
 import logging,sys
 from enum import IntEnum
 
 from concurrent import futures
 import contextlib
-import datetime
 import logging
 import multiprocessing
 import socket
@@ -62,27 +62,35 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
 
 
     def SimpleMethodsLogMessage(self, request, context):
-        print("SimpleMethodsLogMessage called by client(%d) the message: %s" % (request.client_id, request) )
-        # print("SimpleMethod called by client(%d) the message:" % (request.client_id) )
+        # print("SimpleMethodsLogMessage called by client(%d) the message: %s" % (request.client_id, request) )
+        print("SimpleMethodsLogMessage called by client(%d) the message:" % (request.client_id) )
 
         # print(request.key_agreement_log_message_node_id)
         # print(request.key_agreement_message_log)
         # print(request.key_agreement_process_time)
+        now = date.today()
+        # datetime_last = datetime.now().strftime("%H:%M:%S.%f")
+        (dt, micro) = datetime.now().strftime('%H:%M:%S.%f').split('.')
+        datetime_last = "%s.%03d" % (dt, int(micro) / 1000)
+        return_messaage_formatted = "[{}] {}".format(datetime_last, request.key_agreement_message_log)
 
         if request.key_agreement_log_message_node_id == 1:
-            self.controllerGRPC.devices_key_agreement_message_log = request.key_agreement_message_log
-            self.controllerGRPC.devices_key_agreement_processing_time = request.key_agreement_process_time
-            self.controllerGRPC.devices_key_agreement_message_log_updated = 1
+            self.controllerGRPC.key_agreement_message_log_gw1.append(return_messaage_formatted)
+            # self.controllerGRPC.devices_key_agreement_message_log = request.key_agreement_message_log
+            # self.controllerGRPC.devices_key_agreement_processing_time = request.key_agreement_process_time
+            # self.controllerGRPC.gw1_key_agreement_message_log_updated = 1
 
         if request.key_agreement_log_message_node_id == 2:
-            self.controllerGRPC.gw_key_agreement_message_log = request.key_agreement_message_log
-            self.controllerGRPC.gw_key_agreement_processing_time = request.key_agreement_process_time
-            self.controllerGRPC.gw_key_agreement_message_log_updated = 1
+            self.controllerGRPC.key_agreement_message_log_gw2.append(return_messaage_formatted)
+            # self.controllerGRPC.gw_key_agreement_message_log = request.key_agreement_message_log
+            # self.controllerGRPC.gw_key_agreement_processing_time = request.key_agreement_process_time
+            # self.controllerGRPC.gw2_key_agreement_message_log_updated = 1
 
         if request.key_agreement_log_message_node_id == 3:
-            self.controllerGRPC.module_key_agreement_message_log = request.key_agreement_message_log
-            self.controllerGRPC.module_key_agreement_processing_time = request.key_agreement_process_time
-            self.controllerGRPC.module_key_agreement_message_updated = 1
+            self.controllerGRPC.key_agreement_message_log_ed.append(return_messaage_formatted)
+            # self.controllerGRPC.module_key_agreement_message_log = request.key_agreement_message_log
+            # self.controllerGRPC.module_key_agreement_processing_time = request.key_agreement_process_time
+            # self.controllerGRPC.device_key_agreement_message_updated = 1
 
         response = demo_pb2.ReplyLogMessage(
             server_id=SERVER_ID,
@@ -253,15 +261,19 @@ class ControllerGRPC():
         self.module_received_frame_frame_num.append(1)
         self.aggregation_function_result.append(1)
 
-        self.devices_key_agreement_message_log = "log ED"
-        self.devices_key_agreement_message_log_updated = 0
-        self.devices_key_agreement_processing_time = 0
-        self.gw_key_agreement_message_log = "log GW"
-        self.gw_key_agreement_message_log_updated = 0
-        self.gw_key_agreement_processing_time = 0
-        self.module_key_agreement_message_log = "log DM"
-        self.module_key_agreement_message_updated = 0
-        self.module_key_agreement_processing_time = 0
+        # self.devices_key_agreement_message_log = "log ED"
+        # self.devices_key_agreement_message_log_updated = 0
+        # self.devices_key_agreement_processing_time = 0
+        # self.gw_key_agreement_message_log = "log GW"
+        # self.gw_key_agreement_message_log_updated = 0
+        # self.gw_key_agreement_processing_time = 0
+        # self.module_key_agreement_message_log = "log DM"
+        # self.module_key_agreement_message_updated = 0
+        # self.module_key_agreement_processing_time = 0
+
+        self.key_agreement_message_log_gw1 = collections.deque(maxlen=50)
+        self.key_agreement_message_log_gw2 = collections.deque(maxlen=50)
+        self.key_agreement_message_log_ed = collections.deque(maxlen=50)
 
         self.ed_1_gw_selection_confirmed = 0
         self.ed_2_gw_selection_confirmed = 0

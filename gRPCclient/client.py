@@ -121,7 +121,7 @@ def send_log_message(stub):
             "resp from server(%d), the message=%s"
             % (response.server_id, response.response_data)
         )
-        time.sleep(1)
+        time.sleep(0.1)
 
     #
     # time.sleep(2)
@@ -261,19 +261,19 @@ def main():
         stub = demo_pb2_grpc.GRPCDemoStub(channel)
 
         for ii in range(100):
-          send_join_update_message(stub)
+
+          # send_join_update_message(stub)
           # time.sleep(3)
 
           send_log_message(stub)
           # time.sleep(3)
 
-          gw_1_received_frame_num_old += random.randint(2, 5)
-          gw_1_transmitted_frame_num_old += random.randint(2, 5)
-          gw_2_received_frame_num_old += random.randint(2, 5)
-          gw_2_transmitted_frame_num_old += random.randint(2, 5)
-          module_received_frame_frame_num_old += random.randint(2, 5)
-
-          send_statistics(stub)
+          # gw_1_received_frame_num_old += random.randint(2, 5)
+          # gw_1_transmitted_frame_num_old += random.randint(2, 5)
+          # gw_2_received_frame_num_old += random.randint(2, 5)
+          # gw_2_transmitted_frame_num_old += random.randint(2, 5)
+          # module_received_frame_frame_num_old += random.randint(2, 5)
+          # send_statistics(stub)
 
         #
         # server_streaming_method(stub)

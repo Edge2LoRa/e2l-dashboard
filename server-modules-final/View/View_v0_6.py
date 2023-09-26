@@ -467,8 +467,8 @@ class ViewGui:
                     # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
                     line=dict(color='darkgrey', width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
 
-                print("view")
-                print(controllerGRPC.ed_1_gw_selection_confirmed)
+                # print("view")
+                # print(controllerGRPC.ed_1_gw_selection_confirmed)
 
                 if controllerGRPC.ed_1_gw_selection_confirmed==1:
                     colorEdgeEd_1_gw_1 = 'darkblue'
@@ -925,47 +925,28 @@ class ViewGui:
         )
         def update_text_input(n, data):
             try:
-                now = date.today()
-                # today -= timedelta(days=3) #timedelta(days=6)
-                # datetime_last = datetime.strptime(now.strftime("%H:%M:%S"), '%H:%M:%S')
-                datetime_last = datetime.now().strftime("%H:%M:%S")
-                if controllerGRPC.devices_key_agreement_message_log_updated:
-                    controllerGRPC.devices_key_agreement_message_log_updated = 0
-                    return_messaage_ed = controllerGRPC.devices_key_agreement_message_log
-                    return_messaage_formatted = "[{}] {}".format(datetime_last, return_messaage_ed)
-                    self.logDevices.append(return_messaage_formatted)
+                if True: #controllerGRPC.gw1_key_agreement_message_log_updated or \
+                        #controllerGRPC.gw2_key_agreement_message_log_updated or controllerGRPC.device_key_agreement_message_updated:
 
-                html_return_content_ed = []
-                for ii in range(len(self.logDevices)):
-                    html_return_content_ed.append(html.Div(self.logDevices[ii], style={"font-weight": "bold"}))
-                    # html_return_content.append(html.P("[{}] ".format("AUDIO MESSAGE"), style={"font-weight": "bold", "color":"red"}))
-                    # html_return_content_ed.append(html.Br())
+                    # controllerGRPC.gw1_key_agreement_message_log_updated = 0
+                    # controllerGRPC.gw2_key_agreement_message_log_updated = 0
+                    # controllerGRPC.device_key_agreement_message_updated = 0
 
-                if controllerGRPC.gw_key_agreement_message_log_updated:
-                    controllerGRPC.gw_key_agreement_message_log_updated = 0
-                    return_messaage_gw = controllerGRPC.gw_key_agreement_message_log
-                    return_messaage_formatted = "[{}] {}".format(datetime_last, return_messaage_gw)
-                    self.logGateways.append(return_messaage_formatted)
+                    html_return_content_gw1 = []
+                    for ii in range(len(controllerGRPC.key_agreement_message_log_gw1)):
+                        html_return_content_gw1.append(html.Div(controllerGRPC.key_agreement_message_log_gw1[ii], style={"font-weight": "bold"}))
 
-                html_return_content_gw = []
-                for ii in range(len(self.logGateways)):
-                    html_return_content_gw.append(html.Div(self.logGateways[ii], style={"font-weight": "bold"}))
-                    # html_return_content.append(html.P("[{}] ".format("AUDIO MESSAGE"), style={"font-weight": "bold", "color":"red"}))
-                    # html_return_content_gw.append(html.Br())
+                    html_return_content_gw2 = []
+                    for ii in range(len(controllerGRPC.key_agreement_message_log_gw2)):
+                        html_return_content_gw2.append(html.Div(controllerGRPC.key_agreement_message_log_gw2[ii], style={"font-weight": "bold"}))
+                        # html_return_content.append(html.P("[{}] ".format("AUDIO MESSAGE"), style={"font-weight": "bold", "color":"red"}))
+                        # html_return_content_gw.append(html.Br())
 
-                if controllerGRPC.module_key_agreement_message_updated:
-                    controllerGRPC.module_key_agreement_message_updated = 0
-                    return_messaage_ds = controllerGRPC.module_key_agreement_message_log
-                    return_messaage_formatted = "[{}] {}".format(datetime_last, return_messaage_ds)
-                    self.logDistributed.append(return_messaage_formatted)
+                    html_return_content_device = []
+                    for ii in range(len(controllerGRPC.key_agreement_message_log_ed)):
+                        html_return_content_device.append(html.Div(controllerGRPC.key_agreement_message_log_ed[ii], style={"font-weight": "bold"}))
 
-                html_return_content_ds = []
-                for ii in range(len(self.logDistributed)):
-                    html_return_content_ds.append(html.Div(self.logDistributed[ii], style={"font-weight": "bold"}))
-                    # html_return_content.append(html.P("[{}] ".format("AUDIO MESSAGE"), style={"font-weight": "bold", "color":"red"}))
-                    # html_return_content_ds.append(html.Br())
-
-                return data, html.Div(html_return_content_ed), html.Div(html_return_content_gw), html.Div(html_return_content_ds)
+                return data, html.Div(html_return_content_gw1), html.Div(html_return_content_gw2), html.Div(html_return_content_device)
 
             except Exception as e:
                 traceback.print_exc()
