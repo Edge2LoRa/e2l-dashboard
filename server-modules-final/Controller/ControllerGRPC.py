@@ -102,7 +102,6 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
     # but the server can only return a response once.)
     def ClientStreamingMethodStatistics(self, request_iterator, context):
         print("ClientStreamingMethod called by client...")
-        print(request_iterator)
 
         for request in request_iterator:
             print(request)
@@ -123,8 +122,8 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
             self.controllerGRPC.gw_1_received_frame_num_sum = request.gw_1_received_frame_num
             print(self.controllerGRPC.gw_1_received_frame_num)
 
-            self.controllerGRPC.gw_1_transmitted_frame_num.append(request.gw_1_transmitted_frame_num - self.controllerGRPC.gw_1_transmitted_frame_last)
-            self.controllerGRPC.gw_1_transmitted_frame_last = request.gw_1_transmitted_frame_num
+            self.controllerGRPC.gw_1_transmitted_frame_num.append(request.gw_1_transmitted_frame_num - self.controllerGRPC.gw_1_transmitted_frame_num_last)
+            self.controllerGRPC.gw_1_transmitted_frame_num_last = request.gw_1_transmitted_frame_num
             self.controllerGRPC.gw_1_transmitted_frame_num_sum = request.gw_1_transmitted_frame_num
 
             self.controllerGRPC.gw_2_received_frame_num.append(request.gw_2_received_frame_num - self.controllerGRPC.gw_2_received_frame_num_last)
@@ -154,6 +153,9 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
             process_window = self.controllerGRPC.process_window,
         )
 
+        print("send response to statistics")
+        print(self.controllerGRPC.ed_1_gw_selection)
+        print(self.controllerGRPC.start_key_agreement_process)
         if self.controllerGRPC.start_key_agreement_process:
             self.controllerGRPC.start_key_agreement_process = 0
 

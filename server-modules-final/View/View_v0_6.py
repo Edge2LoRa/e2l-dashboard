@@ -874,29 +874,29 @@ class ViewGui:
                 traceback.print_exc()
                 pass
 
-        # @self.app.callback(
-        #     Output('boolean-slider-output-1', 'children'),
-        #     Input('ed-1-gw-selection', 'value')
-        # )
-        # def update_output(selection):
-        #     controllerGRPC.ed_1_gw_selection=selection
-        #     return f'The slider is {selection}.'
-        #
-        # @self.app.callback(
-        #     Output('boolean-slider-output-2', 'children'),
-        #     Input('ed-2-gw-selection', 'value')
-        # )
-        # def update_output(selection):
-        #     controllerGRPC.ed_2_gw_selection=selection
-        #     return f'The slider is {selection}.'
-        #
-        # @self.app.callback(
-        #     Output('boolean-slider-output-3', 'children'),
-        #     Input('ed-3-gw-selection', 'value')
-        # )
-        # def update_output(selection):
-        #     controllerGRPC.ed_3_gw_selection=selection
-        #     return f'The slider is {selection}.'
+        @self.app.callback(
+            Output('boolean-slider-output-1', 'children'),
+            Input('ed-1-gw-selection', 'value')
+        )
+        def update_output_ed1(selection):
+            controllerGRPC.ed_1_gw_selection=selection
+            return f'The slider is {selection}.'
+
+        @self.app.callback(
+            Output('boolean-slider-output-2', 'children'),
+            Input('ed-2-gw-selection', 'value')
+        )
+        def update_output_ed2(selection):
+            controllerGRPC.ed_2_gw_selection=selection
+            return f'The slider is {selection}.'
+
+        @self.app.callback(
+            Output('boolean-slider-output-3', 'children'),
+            Input('ed-3-gw-selection', 'value')
+        )
+        def update_output_ed3(selection):
+            controllerGRPC.ed_3_gw_selection=selection
+            return f'The slider is {selection}.'
 
         @self.app.callback(
             Output('updateScenarioConfigurationDiv', 'children'),
