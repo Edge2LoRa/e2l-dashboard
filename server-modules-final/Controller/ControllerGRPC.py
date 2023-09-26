@@ -14,7 +14,7 @@ import time
 import collections
 
 from concurrent import futures
-
+import numpy as np
 import grpc
 import demo_pb2
 import demo_pb2_grpc
@@ -29,7 +29,6 @@ SERVER_ID = 1
 
 
 class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
-    # 一元模式(在一次调用中, 客户端只能向服务器传输一次请求数据, 服务器也只能返回一次响应)
     # unary-unary(In a single call, the client can only send request once, and the server can
     # only respond once.)
 
@@ -139,7 +138,19 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
 
             self.controllerGRPC.module_received_frame_frame_num.append(request.module_received_frame_frame_num - self.controllerGRPC.module_received_frame_frame_num_last )
             self.controllerGRPC.module_received_frame_frame_num_last = request.module_received_frame_frame_num
+            self.controllerGRPC.module_received_frame_frame_num_sum = request.module_received_frame_frame_num
 
+            print(np.array(self.controllerGRPC.module_received_frame_frame_num_sum))
+            print(np.array(self.controllerGRPC.gw_1_received_frame_num_sum))
+            dm_sum = np.sum(np.array(self.controllerGRPC.module_received_frame_frame_num_sum))
+            gw_sum = np.sum(np.array(self.controllerGRPC.gw_1_received_frame_num_sum)) + np.sum(np.array(self.controllerGRPC.gw_2_received_frame_num_sum))
+            print("test")
+            print(dm_sum)
+            print(gw_sum)
+            if not gw_sum==0:
+                self.controllerGRPC.reduction_frame_num.append(100-int(dm_sum/gw_sum*100))
+            else:
+                self.controllerGRPC.reduction_frame_num.append(0)
             self.controllerGRPC.aggregation_function_result.append(request.aggregation_function_result)
 
         response = demo_pb2.ReplyStatistics(
@@ -182,7 +193,6 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
     # def BidirectionalStreamingMethod(self, request_iterator, context):
     #     print("BidirectionalStreamingMethod called by client...")
     #
-    #     # 开启一个子线程去接收数据
     #     # Open a sub thread to receive data
     #     def parse_request():
     #         for request in request_iterator:
@@ -243,6 +253,9 @@ class ControllerGRPC():
         self.ns_received_frame_frame_num_last = 0
         self.ns_transmitted_frame_frame_num_last = 0
         self.module_received_frame_frame_num_last = 0
+        self.module_received_frame_frame_num_sum = 0
+
+
         self.aggregation_function_result_last = 0
 
 
@@ -253,6 +266,7 @@ class ControllerGRPC():
         self.ns_received_frame_frame_num = collections.deque(maxlen=20)
         self.ns_transmitted_frame_frame_num = collections.deque(maxlen=20)
         self.module_received_frame_frame_num = collections.deque(maxlen=20)
+        self.reduction_frame_num = collections.deque(maxlen=20)
         self.aggregation_function_result = collections.deque(maxlen=20)
 
         self.gw_1_received_frame_num.append(0)

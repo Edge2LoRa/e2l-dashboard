@@ -218,19 +218,16 @@ class ViewGui:
                             html.Div([
                                 html.Label('E2ED 1 GW selection'),
                                 dcc.Slider(1, 2, 1, value=self.ed_1_gw_selection, id='ed-1-gw-selection'),
-                                html.Div(id='boolean-slider-output-1')
                             ]),
 
                             html.Div([
                                 html.Label('E2ED 2 GW selection'),
                                 dcc.Slider(1, 2, 1, value=self.ed_2_gw_selection, id='ed-2-gw-selection'),
-                                html.Div(id='boolean-slider-output-2')
                             ]),
 
                             html.Div([
                                 html.Label('E2ED 3 GW selection'),
                                 dcc.Slider(1, 2, 1, value=self.ed_3_gw_selection, id='ed-3-gw-selection'),
-                                html.Div(id='boolean-slider-output-3')
                             ]),
 
 
@@ -278,10 +275,14 @@ class ViewGui:
                             dcc.Markdown(children="0", id='aggregation_result_id', style={'margin-top': '6px', 'text-align': 'center', 'vertical-align': 'middle'},
                                          className='bg-white'),
 
+                            html.Div(id='boolean-slider-output-1', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-white font-italic'),
+                            html.Div(id='boolean-slider-output-2', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-white font-italic'),
+                            html.Div(id='boolean-slider-output-3', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-white font-italic'),
+
                         ]
                         )
                     ],
-                    style = {'height': '50vh', 'margin': '0px'}),
+                    style = {'height': '40vh', 'margin': '0px'}),
             ],
             style = {'margin': '0px'},
         )
@@ -471,12 +472,12 @@ class ViewGui:
                 # print("view")
                 # print(controllerGRPC.ed_1_gw_selection_confirmed)
 
-                if controllerGRPC.ed_1_gw_selection_confirmed==1:
+                if controllerGRPC.ed_1_gw_selection_confirmed==2:
                     colorEdgeEd_1_gw_1 = 'darkblue'
                     colorEdgeEd_1_gw_2 = 'darkgrey'
                     width_gw1 = 3
                     width_gw2 = 0
-                elif controllerGRPC.ed_1_gw_selection_confirmed==2:
+                elif controllerGRPC.ed_1_gw_selection_confirmed==1:
                     colorEdgeEd_1_gw_1 = 'darkgrey'
                     colorEdgeEd_1_gw_2 = 'darkblue'
                     width_gw1 = 0
@@ -633,7 +634,7 @@ class ViewGui:
                     hoverinfo='text',
                     text="{},{}".format(controllerGRPC.gw_1_received_frame_num_sum, controllerGRPC.gw_1_transmitted_frame_num_sum),
                     textposition="top right",
-                    textfont=dict(size=30, color='blue'),
+                    textfont=dict(size=30, color='red'),
                     marker=dict(
                         showscale=False,
                         # colorscale options
@@ -662,7 +663,7 @@ class ViewGui:
                     hoverinfo='text',
                     text="{},{}".format(controllerGRPC.gw_2_received_frame_num_sum, controllerGRPC.gw_2_transmitted_frame_num_sum),
                     textposition="top right",
-                    textfont=dict(size=30, color='red'),
+                    textfont=dict(size=30, color='blue'),
                     marker=dict(
                         showscale=False,
                         # colorscale options
@@ -820,25 +821,25 @@ class ViewGui:
                 timetsamp_list = list(range(len(gw_1_received_frame_num)))
 
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_1_received_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[0]), name="RX_GW1"
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[0], dash = 'dash'), name="RX_GW1"
                                          ), row=1, col=1,
                               )
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_1_transmitted_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[0]),  name="TX_GW1",
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[0], dash = 'dash'),  name="TX_GW1",
                                          marker=dict(symbol="triangle-up", size=12),
                                          ), row=1, col=1,
                               )
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_2_received_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[1]), name="RX_GW2"
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[1], dash = 'dash'), name="RX_GW2"
                                          ), row=1, col=1,
                               )
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_2_transmitted_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[1]), name="TX_GW2",
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[1], dash = 'dash'), name="TX_GW2",
                                         marker = dict(symbol="triangle-up", size=12),
                                         ), row=1, col=1,
                               )
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=module_received_frame_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[2], dash = 'dash'), name="RX_DM"
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[2]), name="RX_DM"
                                          ), row=1, col=1,
                               )
 
@@ -854,8 +855,7 @@ class ViewGui:
                 #                          ), row=2, col=1,
                 #               )
 
-                stream_reduction = np.array(controllerGRPC.module_received_frame_frame_num) / (np.array(gw_1_transmitted_frame_num) + np.array(gw_2_transmitted_frame_num)) * 100
-
+                stream_reduction = list(controllerGRPC.reduction_frame_num)
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=stream_reduction,
                                          mode='lines+markers', line=dict(color=ble_plot_colors[3], dash='dot', ), name="Stream redcution"
                                          ), row=2, col=1,
