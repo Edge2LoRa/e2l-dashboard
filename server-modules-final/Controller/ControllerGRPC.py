@@ -120,16 +120,20 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
             print(self.controllerGRPC.gw_1_received_frame_num)
             self.controllerGRPC.gw_1_received_frame_num.append(request.gw_1_received_frame_num - self.controllerGRPC.gw_1_received_frame_num_last)
             self.controllerGRPC.gw_1_received_frame_num_last = request.gw_1_received_frame_num
+            self.controllerGRPC.gw_1_received_frame_num_sum = request.gw_1_received_frame_num
             print(self.controllerGRPC.gw_1_received_frame_num)
 
             self.controllerGRPC.gw_1_transmitted_frame_num.append(request.gw_1_transmitted_frame_num - self.controllerGRPC.gw_1_transmitted_frame_last)
             self.controllerGRPC.gw_1_transmitted_frame_last = request.gw_1_transmitted_frame_num
+            self.controllerGRPC.gw_1_transmitted_frame_num_sum = request.gw_1_transmitted_frame_num
 
             self.controllerGRPC.gw_2_received_frame_num.append(request.gw_2_received_frame_num - self.controllerGRPC.gw_2_received_frame_num_last)
             self.controllerGRPC.gw_2_received_frame_num_last = request.gw_2_received_frame_num
+            self.controllerGRPC.gw_2_received_frame_num_sum = request.gw_2_received_frame_num
 
             self.controllerGRPC.gw_2_transmitted_frame_num.append(request.gw_2_transmitted_frame_num - self.controllerGRPC.gw_2_transmitted_frame_num_last)
             self.controllerGRPC.gw_2_transmitted_frame_num_last = request.gw_2_transmitted_frame_num
+            self.controllerGRPC.gw_2_transmitted_frame_num_sum = request.gw_2_transmitted_frame_num
 
             self.controllerGRPC.ns_received_frame_frame_num.append(request.ns_received_frame_frame_num)
             self.controllerGRPC.ns_transmitted_frame_frame_num.append(request.ns_transmitted_frame_frame_num)
@@ -225,9 +229,15 @@ class ControllerGRPC():
         self.change_processing_configuraiton_old = 0
 
         self.gw_1_received_frame_num_last = 0
-        self.gw_1_transmitted_frame_last = 0
+        self.gw_1_transmitted_frame_num_last = 0
         self.gw_2_received_frame_num_last = 0
         self.gw_2_transmitted_frame_num_last = 0
+
+        self.gw_1_received_frame_num_sum = 0
+        self.gw_1_transmitted_frame_num_sum = 0
+        self.gw_2_received_frame_num_sum = 0
+        self.gw_2_transmitted_frame_num_sum = 0
+
         self.ns_received_frame_frame_num_last = 0
         self.ns_transmitted_frame_frame_num_last = 0
         self.module_received_frame_frame_num_last = 0

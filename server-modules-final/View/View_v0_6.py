@@ -73,6 +73,7 @@ class ViewGui:
         # self.app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=device-width"}])
         self.app = dash.Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
         self.app.logger.setLevel(loggingLevel)
+        self.app._favicon = (self.app.get_asset_url("favicon.ico"))
 
         self.logDevices = collections.deque(maxlen=20)
         self.logGateways = collections.deque(maxlen=20)
@@ -339,21 +340,21 @@ class ViewGui:
                             [
                                 html.H6("GW 1 log message", className="log_container_devices"),
                                 html.Div(id="textarea-log-devices", children=[],
-                                    style={"overflow": "scroll", 'height': 180, "background-color": "#f8f9fa"},
+                                    style={"overflow": "scroll", 'height': 220, "background-color": "#f8f9fa"},
                                     ),
                             ]),
                         dbc.Col(
                             [
                                 html.H6("GW 2 log message", className="log_container_gateways"),
                                 html.Div(id="textarea-log-gateways", children=[],
-                                     style={"overflow": "scroll", 'height': 180, "background-color": "#f8f9fa"},
+                                     style={"overflow": "scroll", 'height': 220, "background-color": "#f8f9fa"},
                                      ),
                             ]),
                         dbc.Col(
                             [
                                 html.H6("Edge2LoRa ED log message", className="log_container_gateways"),
                                 html.Div(id="textarea-log-distributed", children=[],
-                                     style={"overflow": "scroll", 'height': 180, "background-color": "#f8f9fa"},
+                                     style={"overflow": "scroll", 'height': 220, "background-color": "#f8f9fa"},
                                      ),
                             ]),
                     ],
@@ -579,7 +580,7 @@ class ViewGui:
                     x=node_x[:2], y=node_y[:2],
                     name='Legacy ED',
                     mode='markers',
-                    hoverinfo='text',
+                    # hoverinfo='text',
                     marker=dict(
                         showscale=False,
                         # colorscale options
@@ -604,7 +605,7 @@ class ViewGui:
                     x=node_x[2:5], y=node_y[2:5],
                     mode='markers',
                     name='E2L ED',
-                    hoverinfo='text',
+                    # hoverinfo='text',
                     marker=dict(
                         showscale=False,
                         # colorscale options
@@ -627,9 +628,12 @@ class ViewGui:
 
                 node_trace_GW_1 = go.Scatter(
                     x=node_x[5:6], y=node_y[5:6],
-                    mode='markers',
+                    mode='markers+text',
                     name='E2L GW 1',
                     hoverinfo='text',
+                    text="{},{}".format(controllerGRPC.gw_1_received_frame_num_sum, controllerGRPC.gw_1_transmitted_frame_num_sum),
+                    textposition="top right",
+                    textfont=dict(size=30, color='blue'),
                     marker=dict(
                         showscale=False,
                         # colorscale options
@@ -653,9 +657,12 @@ class ViewGui:
 
                 node_trace_GW_2 = go.Scatter(
                     x=node_x[6:7], y=node_y[6:7],
-                    mode='markers',
+                    mode='markers+text',
                     name='E2L GW 2',
                     hoverinfo='text',
+                    text="{},{}".format(controllerGRPC.gw_2_received_frame_num_sum, controllerGRPC.gw_2_transmitted_frame_num_sum),
+                    textposition="top right",
+                    textfont=dict(size=30, color='red'),
                     marker=dict(
                         showscale=False,
                         # colorscale options
@@ -680,7 +687,7 @@ class ViewGui:
 
                 node_trace_NS = go.Scatter(
                     x=node_x[7:8], y=node_y[7:8],
-                    mode='markers',
+                    mode='markers+text',
                     name='NS',
                     hoverinfo='text',
                     marker=dict(
@@ -693,12 +700,12 @@ class ViewGui:
                         reversescale=True,
                         color='#071D57',
                         size=40,
-                        colorbar=dict(
-                            thickness=15,
-                            title='Node Connections',
-                            xanchor='left',
-                            titleside='right'
-                        ),
+                        # colorbar=dict(
+                        #     thickness=15,
+                        #     title='Node Connections',
+                        #     xanchor='left',
+                        #     titleside='right'
+                        # ),
                         symbol="square",
                         line=dict(color='#434746', width=3, ),
                     ))
@@ -728,14 +735,14 @@ class ViewGui:
                         line=dict(color='#434746', width=3, ),
                     ))
 
-                node_adjacencies = []
-                node_text = []
-                for node, adjacencies in enumerate(self.G.adjacency()):
-                    # node_adjacencies.append(len(adjacencies[1]))
-                    node_text.append('# of connections: ' + str(len(adjacencies[1])))
-
-                # node_trace_EDL.marker.color = node_adjacencies
-                node_trace_EDL.text = node_text
+                # node_adjacencies = []
+                # node_text = []
+                # for node, adjacencies in enumerate(self.G.adjacency()):
+                #     # node_adjacencies.append(len(adjacencies[1]))
+                #     node_text.append('# of connections: ' + str(len(adjacencies[1])))
+                #
+                # # node_trace_EDL.marker.color = node_adjacencies
+                # node_trace_EDL.text = node_text
 
                 fig = go.Figure(data=[edge_trace_E2LE,
                                       edge_trace_E2E1_GW1, edge_trace_E2E1_GW2,
