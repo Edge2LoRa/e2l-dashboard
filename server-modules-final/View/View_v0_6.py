@@ -83,7 +83,7 @@ class ViewGui:
         self.ed_2_gw_selection = 1
         self.ed_3_gw_selection = 1
         self.dropdown_process_function = "mean"
-        self.dropdown_process_window = 40
+        self.dropdown_process_window = 2
 
         self.app.title = "EDGE2LORA DEMO (MOBICOM 2023)"
 
@@ -261,7 +261,7 @@ class ViewGui:
                                     {'label': '{}'.format(self.processingWindows[index]),
                                      'value': '{}'.format(self.processingWindows[index])} for index in range(len(self.processingWindows) - 1)
                                 ],
-                                value=self.processingWindows[0]
+                                value=self.processingWindows[1]
                             ),
 
                             html.Button('Update configuration', id='updateProcessingConfigurationButton',  n_clicks=0,
