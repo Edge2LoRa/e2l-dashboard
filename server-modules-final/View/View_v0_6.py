@@ -275,9 +275,9 @@ class ViewGui:
                             dcc.Markdown(children="0", id='aggregation_result_id', style={'margin-top': '6px', 'text-align': 'center', 'vertical-align': 'middle'},
                                          className='bg-white'),
 
-                            html.Div(id='boolean-slider-output-1', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-white font-italic'),
-                            html.Div(id='boolean-slider-output-2', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-white font-italic'),
-                            html.Div(id='boolean-slider-output-3', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-white font-italic'),
+                            html.Div(id='boolean-slider-output-1', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-light font-italic'),
+                            html.Div(id='boolean-slider-output-2', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-light font-italic'),
+                            html.Div(id='boolean-slider-output-3', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-light font-italic'),
 
                         ]
                         )
@@ -598,7 +598,7 @@ class ViewGui:
                             xanchor='left',
                             titleside='right'
                         ),
-                        line=dict( color='#434746', width=3, ),
+                        line=dict( color='#434746', width=2, ),
                         symbol="circle",
                         ))
 
@@ -624,7 +624,7 @@ class ViewGui:
                             titleside='right'
                         ),
                         symbol="star",
-                        line=dict( color='#434746', width=3, ),
+                        line=dict( color='#434746', width=2, ),
                     ))
 
                 node_trace_GW_1 = go.Scatter(
@@ -652,7 +652,7 @@ class ViewGui:
                             titleside='right'
                         ),
                         symbol="triangle-up",
-                        line=dict(color="#434746", width=3, ),
+                        line=dict(color="#434746", width=0, ),
                     ))
 
 
@@ -708,7 +708,7 @@ class ViewGui:
                         #     titleside='right'
                         # ),
                         symbol="square",
-                        line=dict(color='#434746', width=3, ),
+                        line=dict(color='#434746', width=0, ),
                     ))
 
                 node_trace_DS = go.Scatter(
@@ -733,7 +733,7 @@ class ViewGui:
                             titleside='right'
                         ),
                         symbol="diamond",
-                        line=dict(color='#434746', width=3, ),
+                        line=dict(color='#434746', width=0, ),
                     ))
 
                 # node_adjacencies = []
@@ -821,8 +821,9 @@ class ViewGui:
                 timetsamp_list = list(range(len(gw_1_received_frame_num)))
 
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_1_received_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[0], dash = 'dash'), name="RX_GW1"
-                                         ), row=1, col=1,
+                                        mode='lines+markers', line=dict(color=ble_plot_colors[0], dash = 'dash'), name="RX_GW1",
+                                        marker = dict(symbol="circle-open", size=12),
+                                        ), row=1, col=1,
                               )
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_1_transmitted_frame_num,
                                          mode='lines+markers', line=dict(color=ble_plot_colors[0], dash = 'dash'),  name="TX_GW1",
@@ -830,17 +831,19 @@ class ViewGui:
                                          ), row=1, col=1,
                               )
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_2_received_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[1], dash = 'dash'), name="RX_GW2"
-                                         ), row=1, col=1,
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[1], dash = 'dash'), name="RX_GW2",
+                                         marker = dict(symbol="circle-open", size=12),
+                                        ), row=1, col=1,
                               )
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_2_transmitted_frame_num,
                                          mode='lines+markers', line=dict(color=ble_plot_colors[1], dash = 'dash'), name="TX_GW2",
-                                        marker = dict(symbol="triangle-up", size=12),
+                                         marker = dict(symbol="triangle-up", size=12),
                                         ), row=1, col=1,
                               )
                 fig.add_trace(go.Scatter(x=timetsamp_list, y=module_received_frame_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[2]), name="RX_DM"
-                                         ), row=1, col=1,
+                                         mode='lines+markers', line=dict(color=ble_plot_colors[2]), name="RX_DM",
+                                         marker = dict(symbol="circle", size=12),
+                                        ), row=1, col=1,
                               )
 
                 # ns_received_frame_frame_num = list(controllerGRPC.ns_received_frame_frame_num)
@@ -880,7 +883,8 @@ class ViewGui:
         )
         def update_output_ed1(selection):
             controllerGRPC.ed_1_gw_selection=selection
-            return f'The slider is {selection}.'
+            # return f'The slider is {selection}.'
+            return f''
 
         @self.app.callback(
             Output('boolean-slider-output-2', 'children'),
@@ -888,7 +892,8 @@ class ViewGui:
         )
         def update_output_ed2(selection):
             controllerGRPC.ed_2_gw_selection=selection
-            return f'The slider is {selection}.'
+            # return f'The slider is {selection}.'
+            return f''
 
         @self.app.callback(
             Output('boolean-slider-output-3', 'children'),
@@ -896,7 +901,8 @@ class ViewGui:
         )
         def update_output_ed3(selection):
             controllerGRPC.ed_3_gw_selection=selection
-            return f'The slider is {selection}.'
+            # return f'The slider is {selection}.'
+            return f''
 
         @self.app.callback(
             Output('updateScenarioConfigurationDiv', 'children'),
