@@ -1,28 +1,57 @@
-##  Edge2LoRa DEMO DASHBOARD and interface
+#  Edge2LoRa Dashboard
 
-  create and start virtual environment from ./requirements.txt
+The Edge2LoRa Dashboard aims to shows the data stream for Edge2LoRa. The Dashboard has been created to support the Demo presented at the MobiCom 2023 in Madrid the 2nd of October. [LINK](https://doi.org/10.1145/3570361.3614074)
 
-- #### RUN dashboard
+## Clone the repository
 
-  `cd server-modules-final`
+To clone the repository run the following command:
 
-  `python main.py #run the dashboard` 
+```bash
+git clone https://github.com/Edge2LoRa/e2l-dashboard.git 
+```
 
-  `connect to 127.0.0.1:8050 # web UI`
+or:
 
-- #### send stream statistics and log message to dashboard
+```bash
+git clone git@github.com:Edge2LoRa/e2l-dashboard.git
+```
 
-  `cd gRPCclient`
+## Create & activate a Virtual Enviroment (Optional, but recommended)
 
-  `python client.py # send log message and statistics to dashboard`
+It is reccommended to create a python virtual enviroment to avoid creating conflicts between the different packages that could be installed in your system. To do so, run:
+```bash
+cd e2l-dashboard/
+python3 -m venv vnev
+```
+
+To activate the virtual enviroement run (to repeat each time):
+```basj
+. venv/bin/activate
+```
+
+## Install the requirements
+
+To install the needed python packages run:
+
+```bash
+pip3 install wheel
+pip3 install -r requirements.txt
+```
+
+## Run the Dashboard
+
+To run the Dashboard run:
+
+```bash
+cd server-modules-final/
+python3 main.py
+```
+
+## Availables endpoints
+
+The HTTP endpoint hosting the GUI is available on the port 8050.
+
+The RPC endpoint to which the [e2l-distributed-module](https://github.com/Edge2LoRa/e2l-distributed-module) shall connect is available on the port 23333.
 
 
-- ### NOTE
-- From **demo.proto**, message **SendStatistics** and message **ReplyStatistics** is used to report statistics
-  - we expect to send statistics in a streaming fashion, the scenario configuration and the processing configuration are forced from the server in the response.
-- From **demo.proto**, message **SendLogMessage** and message **ReplyLogMessage** is used to report log messages
-  - we expect to send key agreement log message for ED, GW and DM, a code identifier is fill in the message to report log message for each of them
-- client.py script contains example of client, two functions are considered 
-  - send_log_message() to report log messages
-  - send_statistics() to report statistics
 
