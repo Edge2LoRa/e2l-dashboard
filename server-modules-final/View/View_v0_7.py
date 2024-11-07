@@ -7,13 +7,14 @@ import collections
 import folium
 
 import datetime
+import random
 
 from datetime import datetime, timedelta, date
 # from datetime import datetime as dttime
 import dash_leaflet as dl
 # import dash_daq as daq
 from plotly.subplots import make_subplots
-
+import plotly.express as px
 # import pandas as pd
 
 import sys
@@ -47,9 +48,6 @@ logging.basicConfig(stream=sys.stdout, level=logLevel)
 # import json
 
 N_SEC=24
-
-gw_map = folium.Map(location=[41.9028, 12.4964], zoom_start=12)
-gw_map.save('rome.html')
 
 def audioEncode(inputAudio, type):
     outputAudio=[]
@@ -312,29 +310,11 @@ class ViewGui:
                                         # dcc.Graph(id="lora-network-topology", animate=False, style={"height": 650}, config={'displayModeBar': False}),
                                         # dcc.Graph(id="lora-network-topology", animate=False),
                                         #html.Iframe(id='lora-network-topology', srcDoc=open('rome.html', 'r').read(), width='100%', height='400px'),
-                                        dl.Map(dl.TileLayer(), center=[56,10], zoom=6, style={'height': '40vh'})
+                                        dl.Map([dl.TileLayer(),dl.LayerGroup(id='nodes-marker-layer'),dl.LayerGroup(id='gateway-marker-layer')], center=[41.90,12.49], zoom=10, style={'height': '45vh', 'margin-left':'20px', 'margin-right':'20px','width':'97%'}),
                                     ],
                                 ),
                             ]),
-                        dbc.Col(
-                            [
-                                # dbc.Row([],
-                                #         style={"height": "1vh", 'margin-left': '0px'},
-                                #         className='bg-white'
-                                #         ),
-                                dbc.Row(
-                                    [
-                                        html.H6('Traffic', style={'margin-top': '12px', 'margin-left': '12px'})
-                                    ],
-                                    style={"height": "5vh",  'margin': '8px', 'margin-top': '10px'},
-                                    className='bg-primary text-white font-italic'
-                                ),
-                                dbc.Row(
-                                    [
-                                        dcc.Graph(id="lora-traffic-graph", animate=False),
-                                    ],
-                                ),
-                            ]),
+                        
                         # html.Div(id="textarea-1", children=[]),
                         dcc.Store(id="session", storage_type="session"),
                     ],
@@ -345,24 +325,49 @@ class ViewGui:
                     [
                         dbc.Col(
                             [
-                                html.H6("GW 1 log message", className="log_container_devices"),
-                                html.Div(id="textarea-log-devices", children=[],
-                                    style={"overflow": "scroll", 'height': 220, "background-color": "#f8f9fa"},
-                                    ),
+                                # dbc.Row([],
+                                #         style={"height": "1vh", 'margin-left': '0px'},
+                                #         className='bg-white'
+                                #         ),
+                                dbc.Row(
+                                    [
+                                        html.H6('Gateways transmission and reception of frames', style={'margin-top': '12px', 'margin-left': '12px'})
+                                    ],
+                                    style={"height": "5vh",  'margin': '8px', 'margin-top': '10px'},
+                                    className='bg-primary text-white font-italic'
+                                ),
+                                dbc.Row(
+                                    [
+                                        dcc.Graph(id="gateways-statistics", animate=False,style={'height': '20vh'}),
+
+                                        #dcc.Graph(id="lora-traffic-graph", animate=False)
+                                    ],
+                                    
+                                ),
                             ]),
+                    ],
+                    style={"height": "25vh"}),
+        
+                
+
+                dbc.Row(
+                    [
                         dbc.Col(
                             [
-                                html.H6("GW 2 log message", className="log_container_gateways"),
-                                html.Div(id="textarea-log-gateways", children=[],
-                                     style={"overflow": "scroll", 'height': 220, "background-color": "#f8f9fa"},
-                                     ),
-                            ]),
-                        dbc.Col(
-                            [
-                                html.H6("Edge2LoRa ED log message", className="log_container_gateways"),
-                                html.Div(id="textarea-log-distributed", children=[],
-                                     style={"overflow": "scroll", 'height': 220, "background-color": "#f8f9fa"},
-                                     ),
+                                dbc.Row(
+                                    [
+                                        html.H6('Gateways Load informations', style={'margin-top': '12px', 'margin-left': '12px'})
+                                    ],
+                                    style={"height": "5vh",  'margin': '8px', 'margin-top': '10px'},
+                                    className='bg-primary text-white font-italic'
+                                ),
+                                dbc.Row(
+                                    [
+                                        dcc.Graph(id="gateways-loads", animate=False,style={'height': '20vh'}),
+
+                                    ],
+                                    
+                                ),
                             ]),
                     ],
                     style={"height": "25vh"}),
@@ -799,6 +804,83 @@ class ViewGui:
                 traceback.print_exc()
             pass
 
+
+
+        @self.app.callback([Output('nodes-marker-layer','children'), Output('gateway-marker-layer','children')],                           
+                           [Input('interval-component', 'n_intervals')])
+        
+        def update_markers_map(n):
+            
+            nodes_markers = [dl.Marker(position=[device.lat,device.lon]) for device in controllerGRPC.devices_list]
+
+            return nodes_markers,[]
+        
+
+        @self.app.callback(Output('gateways-loads', 'figure'),
+                           Input('interval-component', 'n_intervals'))
+        
+        def update_gateways_loads(n):
+            memory_trace = go.Bar(
+                x = controllerGRPC.gateways_stats_dataframe['Gateway ID'],
+                y = controllerGRPC.gateways_stats_dataframe['mem'],
+                name = 'Memory',
+                marker=dict(color='purple')
+            )
+
+            cpu_trace = go.Bar(
+                x=controllerGRPC.gateways_stats_dataframe['Gateway ID'],
+                y=controllerGRPC.gateways_stats_dataframe['cpu'],
+                name='CPU',
+                marker=dict(color='orange')
+            )
+
+            
+            fig = go.Figure(data =[memory_trace, cpu_trace])
+            
+
+            fig.update_layout(margin=dict(t=10, b=10), showlegend=True)
+            fig.update_xaxes(showticklabels=True)
+
+            return fig
+
+
+
+        @self.app.callback(Output('gateways-statistics', 'figure'),
+                           Input('interval-component', 'n_intervals'))
+        
+        def update_gateways_statistics(n):
+            # i have to make a plotly figure composed by a bar plot with a varying number of bars
+            # the number of bars is equal to the number of gateways
+            # each bar has a height equal to the number of received frames
+
+            # fig = go.bar(controllerGRPC.gateways_stats_dataframe, x='Gateway ID', y='mem', title='Gateways statistics')
+            # fig.update_layout( margin=dict(l=10, r=10, t=10, b=10), )
+
+            bar_trace_rx = go.Bar(
+                x=controllerGRPC.gateways_stats_dataframe['Gateway ID'],
+                y=controllerGRPC.gateways_stats_dataframe['RX_frame'],
+                name = 'RX_frame'
+            )
+
+            bar_trace_tx = go.Bar(
+                x=controllerGRPC.gateways_stats_dataframe['Gateway ID'],
+                y=controllerGRPC.gateways_stats_dataframe['TX_frame'],
+                name = 'TX_frame'
+            )
+
+            fig = go.Figure(data =[bar_trace_rx, bar_trace_tx])
+
+
+
+            fig.update_layout(margin=dict(t=10, b=10), showlegend=True)
+            fig.update_xaxes(showticklabels=True)
+
+            return fig
+
+           
+
+
+            
 
         @self.app.callback([Output('lora-traffic-graph', 'figure'), Output('aggregation_result_id', 'children')],
                            [Input('interval-component', 'n_intervals')])
