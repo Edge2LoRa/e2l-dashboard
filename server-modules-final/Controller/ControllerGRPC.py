@@ -191,6 +191,10 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
             start_key_agreement_process = self.controllerGRPC.start_key_agreement_process,
             process_function = self.controllerGRPC.process_function,
             process_window = self.controllerGRPC.process_window,
+            scenario = self.controllerGRPC.scenario,
+            assining_policy = self.controllerGRPC.assining_policy,
+            refreshing_table_rate = self.controllerGRPC.refreshing_table_rate,
+
         )
 
         print("send response to statistics")
@@ -265,6 +269,10 @@ class ControllerGRPC():
 
         self.process_function = "mean"
         self.process_window = 10
+
+        self.scenario = "Moving cluster"
+        self.assining_policy = "Random"
+        self.refreshing_table_rate = 1
 
         self.change_processing_configuraiton_old = 0
          

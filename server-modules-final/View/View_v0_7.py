@@ -228,9 +228,6 @@ class ViewGui:
                                 ],
                                 value=self.scenarios[0]
                             ),
-                            html.Button('Update Scenario', id='updateScenarioConfigurationButton',  n_clicks=0,
-                                        style={'margin-top': '16px'},
-                                        className='bg-dark text-white'),
                             html.Div(id='updateScenarioConfigurationDiv'),
                             
                             # html.Div([
@@ -260,11 +257,6 @@ class ViewGui:
                                 value=self.assigning_policy[0]
                             ),
                             dcc.Input(id="UpdateTableRate", type="number", placeholder="Update Table Rate", value=self.update_table_rate, min=1, max=1000, step=1),
-                            
-
-                            html.Button('Update Assignment Policy', id='updatePolicyConfigurationButton',  n_clicks=0,
-                                        style={'margin-top': '16px'},
-                                        className='bg-dark text-white'),
                             html.Div(id='updatePolicyConfigurationDiv'),
                             html.Hr(),
 
@@ -460,20 +452,20 @@ class ViewGui:
         #CALLBACKS
         ########################
 
-        @self.app.callback(
-            [Output('confirm-dialog-app8', 'displayed'), Output('confirm-dialog-app8', 'message')],
-            [Input('legacy-device-num', 'value'), Input('E2L-device-num', 'value'),
-             Input('processing-function-dropdown', 'value'), Input('processing-window-dropdown', 'value')])
-        def update_output(legacyDeviceNum, e2lDeviceNum, processingFunction, processingWindow):
+        # @self.app.callback(
+        #     [Output('confirm-dialog-app8', 'displayed'), Output('confirm-dialog-app8', 'message')],
+        #     [Input('legacy-device-num', 'value'), Input('E2L-device-num', 'value'),
+        #      Input('processing-function-dropdown', 'value'), Input('processing-window-dropdown', 'value')])
+        # def update_output(legacyDeviceNum, e2lDeviceNum, processingFunction, processingWindow):
 
-            controllerGRPC.legacy_device_num = legacyDeviceNum
-            controllerGRPC.E2L_device_num = e2lDeviceNum
-            controllerGRPC.process_function = processingFunction
-            controllerGRPC.process_window = processingWindow
+        #     controllerGRPC.legacy_device_num = legacyDeviceNum
+        #     controllerGRPC.E2L_device_num = e2lDeviceNum
+        #     controllerGRPC.process_function = processingFunction
+        #     controllerGRPC.process_window = processingWindow
 
-            messageDisplayString = 'Sent change command : ' + str(processingFunction)
+        #     messageDisplayString = 'Sent change command : ' + str(processingFunction)
 
-            return True, messageDisplayString
+        #     return True, messageDisplayString
 
 
         @self.app.callback(Output('lora-network-topology', 'figure'),
@@ -1021,15 +1013,15 @@ class ViewGui:
             # return f'The slider is {selection}.'
             return f''
 
-        @self.app.callback(
-            Output('updateScenarioConfigurationDiv', 'children'),
-            Input('updateScenarioConfigurationButton', 'n_clicks'),
-            prevent_initial_call=True
-        )
-        def update_output(n_clicks):
-            controllerGRPC.start_key_agreement_process = 1
-            # return 'the button has been clicked {} times'.format(n_clicks)
-            return ''
+        # @self.app.callback(
+        #     Output('updateScenarioConfigurationDiv', 'children'),
+        #     Input('updateScenarioConfigurationButton', 'n_clicks'),
+        #     prevent_initial_call=True
+        # )
+        # def update_output(n_clicks):
+        #     controllerGRPC.start_key_agreement_process = 1
+        #     # return 'the button has been clicked {} times'.format(n_clicks)
+        #     return ''
 
         @self.app.callback(
             Output('updateProcessingConfigurationDiv', 'children'),
@@ -1045,6 +1037,25 @@ class ViewGui:
             else: 
                 controllerGRPC.process_window = 10
             # return 'the button has been clicked {} times'.format(n_clicks)
+            return ''
+
+        @self.app.callback(
+                Output('updateScenarioConfigurationDiv', 'children'),
+                [Input('scenario-selection-dropdown', 'value')],
+                 prevent_initial_call=True
+        )
+        def update_scenario_configuration(scenario):
+            controllerGRPC.scenario = scenario
+            return ''
+        
+        @self.app.callback(
+            Output('updatePolicyConfigurationDiv', 'children'),
+            [Input('policy-selection-dropdown', 'value'),Input('UpdateTableRate', 'value')],
+             prevent_initial_call=True
+        )
+        def update_policy_configuration(policy,rate):
+            controllerGRPC.assining_policy = policy
+            controllerGRPC.refreshing_table_rate = rate
             return ''
 
         @self.app.callback(
