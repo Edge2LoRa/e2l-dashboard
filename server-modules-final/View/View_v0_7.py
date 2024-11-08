@@ -89,7 +89,10 @@ class ViewGui:
 
         self.app.title = "EDGE2LORA DEMO (MOBICOM 2023)"
 
-        self.processingFunctions = ["mean", "max", "min", "std"]
+        self.processingFunctions = ["Mean and Variance", "Hampel Filter"]
+        self.scenarios = ["Moving cluster", "Taxi simulation"]
+        self.assigning_policy = ["Random","Nearest","Balanced"]
+        self.update_table_rate = 1
         self.processingWindows = [1, 2, 4, 8, 10, 20]
 
         # self.G = nx.random_geometric_graph(8, 0.125)
@@ -215,28 +218,54 @@ class ViewGui:
                     [
                         html.Div([
                             html.P('SCENARIO CONFIGURATION', style={'margin-top': '18px', 'margin-bottom': '4px'}, className='font-weight-bold'),
-                            # html.H6("SCENARIO CONFIGURATION", className="graph__title"),
 
-                            html.Div([
-                                html.Label('E2ED 1 GW selection'),
-                                dcc.Slider(1, 2, 1, value=self.ed_1_gw_selection, id='ed-1-gw-selection'),
-                            ]),
-
-                            html.Div([
-                                html.Label('E2ED 2 GW selection'),
-                                dcc.Slider(1, 2, 1, value=self.ed_2_gw_selection, id='ed-2-gw-selection'),
-                            ]),
-
-                            html.Div([
-                                html.Label('E2ED 3 GW selection'),
-                                dcc.Slider(1, 2, 1, value=self.ed_3_gw_selection, id='ed-3-gw-selection'),
-                            ]),
-
-
-                            html.Button('Update configuration', id='updateScenarioConfigurationButton',  n_clicks=0,
+                            html.Label('Select the scenario to use'),
+                            dcc.Dropdown(
+                                id='scenario-selection-dropdown',
+                                options=[
+                                    {'label': '{}'.format(self.scenarios[index]),
+                                     'value': '{}'.format(self.scenarios[index])} for index in range(len(self.scenarios))
+                                ],
+                                value=self.scenarios[0]
+                            ),
+                            html.Button('Update Scenario', id='updateScenarioConfigurationButton',  n_clicks=0,
                                         style={'margin-top': '16px'},
                                         className='bg-dark text-white'),
                             html.Div(id='updateScenarioConfigurationDiv'),
+                            
+                            # html.Div([
+                            #     html.Label('E2ED 1 GW selection'),
+                            #     dcc.Slider(1, 2, 1, value=self.ed_1_gw_selection, id='ed-1-gw-selection'),
+                            # ]),
+
+                            # html.Div([
+                            #     html.Label('E2ED 2 GW selection'),
+                            #     dcc.Slider(1, 2, 1, value=self.ed_2_gw_selection, id='ed-2-gw-selection'),
+                            # ]),
+
+                            # html.Div([
+                            #     html.Label('E2ED 3 GW selection'),
+                            #     dcc.Slider(1, 2, 1, value=self.ed_3_gw_selection, id='ed-3-gw-selection'),
+                            # ]),
+                            html.Hr(),
+                            html.P('ASSIGNMENT CONFIGURATION', style={'margin-top': '18px', 'margin-bottom': '4px'}, className='font-weight-bold'),
+
+                            html.Label('Select the policy to use'),
+                            dcc.Dropdown(
+                                id='policy-selection-dropdown',
+                                options=[
+                                    {'label': '{}'.format(self.assigning_policy[index]),
+                                     'value': '{}'.format(self.assigning_policy[index])} for index in range(len(self.assigning_policy))
+                                ],
+                                value=self.assigning_policy[0]
+                            ),
+                            dcc.Input(id="UpdateTableRate", type="number", placeholder="Update Table Rate", value=self.update_table_rate, min=1, max=1000, step=1),
+                            
+
+                            html.Button('Update Assignment Policy', id='updatePolicyConfigurationButton',  n_clicks=0,
+                                        style={'margin-top': '16px'},
+                                        className='bg-dark text-white'),
+                            html.Div(id='updatePolicyConfigurationDiv'),
                             html.Hr(),
 
                             # html.Div(id='output-container-button-app12', children='',
@@ -251,7 +280,7 @@ class ViewGui:
                                 id='processing-function-dropdown',
                                 options=[
                                     {'label': '{}'.format(self.processingFunctions[index]),
-                                     'value': '{}'.format(self.processingFunctions[index])} for index in range(len(self.processingFunctions) - 1)
+                                     'value': '{}'.format(self.processingFunctions[index])} for index in range(len(self.processingFunctions))
                                 ],
                                 value=self.processingFunctions[0]
                             ),
@@ -261,9 +290,9 @@ class ViewGui:
                                 id='processing-window-dropdown',
                                 options=[
                                     {'label': '{}'.format(self.processingWindows[index]),
-                                     'value': '{}'.format(self.processingWindows[index])} for index in range(len(self.processingWindows) - 1)
+                                     'value': '{}'.format(self.processingWindows[index])} for index in range(len(self.processingWindows))
                                 ],
-                                value=self.processingWindows[1]
+                                value=self.processingWindows[0]
                             ),
 
                             html.Button('Update configuration', id='updateProcessingConfigurationButton',  n_clicks=0,
@@ -271,15 +300,15 @@ class ViewGui:
                                         className='bg-dark text-white'),
                             # html.Button('Update processing configuration', id='updateProcessingConfigurationButton', style={'text-align': 'center', 'vertical-align': 'middle', }),
                             html.Div(id='updateProcessingConfigurationDiv'),
-                            html.Hr(),
+                            
 
-                            html.Label('AGGREGATION RESULT'),
-                            dcc.Markdown(children="0", id='aggregation_result_id', style={'margin-top': '6px', 'text-align': 'center', 'vertical-align': 'middle'},
-                                         className='bg-white'),
+                            # html.Label('AGGREGATION RESULT'),
+                            # dcc.Markdown(children="0", id='aggregation_result_id', style={'margin-top': '6px', 'text-align': 'center', 'vertical-align': 'middle'},
+                            #              className='bg-white'),
 
-                            html.Div(id='boolean-slider-output-1', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-light font-italic'),
-                            html.Div(id='boolean-slider-output-2', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-light font-italic'),
-                            html.Div(id='boolean-slider-output-3', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-light font-italic'),
+                            # html.Div(id='boolean-slider-output-1', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-light font-italic'),
+                            # html.Div(id='boolean-slider-output-2', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-light font-italic'),
+                            # html.Div(id='boolean-slider-output-3', style={ 'text-align': 'center', 'vertical-align': 'middle'}, className='bg-light text-light font-italic'),
 
                         ]
                         )
@@ -1011,7 +1040,10 @@ class ViewGui:
         def update_output(n_clicks,processingFunction, processingWindow):
             controllerGRPC.change_processing_configuraiton = 1
             controllerGRPC.process_function = processingFunction
-            controllerGRPC.process_window = int(processingWindow)
+            if processingWindow is not None :
+                controllerGRPC.process_window = int(processingWindow)
+            else: 
+                controllerGRPC.process_window = 10
             # return 'the button has been clicked {} times'.format(n_clicks)
             return ''
 

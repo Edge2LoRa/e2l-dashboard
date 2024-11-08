@@ -266,8 +266,11 @@ class ControllerGRPC():
         self.process_function = "mean"
         self.process_window = 10
 
-        self.change_processing_configuraiton = 0
         self.change_processing_configuraiton_old = 0
+         
+        self.change_processing_configuraiton = 0
+        self.change_scenario_configuration = 0
+        self.change_assignment_configuration = 0
 
         self.gw_1_received_frame_num_last = 0
         self.gw_1_transmitted_frame_num_last = 0
