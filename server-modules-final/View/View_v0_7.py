@@ -832,9 +832,13 @@ class ViewGui:
         
         def update_markers_map(n):
             
+            gateway_icon = {
+                'iconUrl': self.app.get_asset_url("gateway-icon.png"),
+                'iconSize': [70,70],
+            }
             nodes_markers = [dl.Marker(position=[device.lat,device.lon]) for device in controllerGRPC.devices_list]
-
-            return nodes_markers,[]
+            gateways_markers = [dl.Marker(position=[gateway.lat,gateway.lon],icon=gateway_icon, children=dl.Popup(content=f"This gateways has id: {gateway.gw_id}")) for gateway in controllerGRPC.gateways_list]
+            return nodes_markers,gateways_markers
         
 
         @self.app.callback(Output('gateways-loads', 'figure'),
