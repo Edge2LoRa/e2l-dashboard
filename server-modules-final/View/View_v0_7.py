@@ -892,8 +892,14 @@ class ViewGui:
                 y=controllerGRPC.gateways_stats_dataframe['TX_frame'],
                 name = 'TX_frame'
             )
+            bar_trace_processed = go.Bar(
+                x = controllerGRPC.gateways_stats_dataframe['Gateway ID'],
+                y = controllerGRPC.gateways_stats_dataframe['processed_frame'],
+                name = 'Processed_frame',
+                marker=dict(color='green')
+            )
 
-            fig = go.Figure(data =[bar_trace_rx, bar_trace_tx])
+            fig = go.Figure(data =[bar_trace_rx, bar_trace_tx, bar_trace_processed])
 
 
 

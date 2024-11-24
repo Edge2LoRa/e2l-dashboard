@@ -41,10 +41,12 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
         # update the informations in the gateway server
         self.controllerGRPC.gateways_list = request.gateway_list
 
-        self.controllerGRPC.gateways_stats_dataframe = pd.DataFrame(columns=['Gateway ID','lat','lon','RX_frame','TX_frame','mem','cpu','bandwidth_reduction'])
+        self.controllerGRPC.gateways_stats_dataframe = self.controllerGRPC.gateways_stats_dataframe.iloc[0:0]
+        
 
         for gw in self.controllerGRPC.gateways_list:
-            self.controllerGRPC.gateways_stats_dataframe = self.controllerGRPC.gateways_stats_dataframe._append({'Gateway ID': gw.gw_id, 'lat': gw.lat, 'lon': gw.lon, 'RX_frame': gw.rx_frame, 'TX_frame': gw.tx_frame, 'mem': gw.memory, 'cpu': gw.cpu, 'bandwidth_reduction': gw.bandwidth_reduction}, ignore_index=True)
+            
+            self.controllerGRPC.gateways_stats_dataframe = self.controllerGRPC.gateways_stats_dataframe._append({'Gateway ID': gw.gw_id, 'lat': gw.lat, 'lon': gw.lon, 'RX_frame': gw.rx_frame, 'TX_frame': gw.tx_frame, 'processed_frame':gw.processed_frame,'mem': gw.memory, 'cpu': gw.cpu, 'bandwidth_reduction': gw.bandwidth_reduction}, ignore_index=True)
 
         #print(self.controllerGRPC.gateways_stats_dataframe)
         response = demo_pb2.ReplyInfoGwList(
@@ -301,7 +303,7 @@ class ControllerGRPC():
         self.gateways_list = []
         self.devices_list = []
 
-        self.gateways_stats_dataframe = pd.DataFrame(columns=['Gateway ID','lat','lon','RX_frame','TX_frame','mem','cpu','bandwidth_reduction'])
+        self.gateways_stats_dataframe = pd.DataFrame(columns=['Gateway ID','lat','lon','RX_frame','TX_frame','processed_frame','mem','cpu','bandwidth_reduction'])
 
 
         self.gw_1_received_frame_num = collections.deque(maxlen=20)
