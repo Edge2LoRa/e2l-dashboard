@@ -77,6 +77,16 @@ class ViewGui:
         self.app.logger.setLevel(loggingLevel)
         self.app._favicon = (self.app.get_asset_url("favicon.ico"))
 
+        self.gateway_icon = {
+                'iconUrl': self.app.get_asset_url("gateway-icon.png"),
+                'iconSize': [70,70],
+            }
+
+        self.gateways_markers = [dl.Marker(position=[gateway.lat,gateway.lon],icon=self.gateway_icon, id=gateway.gw_id ,children=dl.Popup(content=f"This gateways has id: {gateway.gw_id}")) for gateway in controllerGRPC.gateways_list]
+
+        self.coverage_circles_markers = []
+        
+
         self.logDevices = collections.deque(maxlen=20)
         self.logGateways = collections.deque(maxlen=20)
         self.logDistributed = collections.deque(maxlen=20)
@@ -331,7 +341,13 @@ class ViewGui:
                                         # dcc.Graph(id="lora-network-topology", animate=False, style={"height": 650}, config={'displayModeBar': False}),
                                         # dcc.Graph(id="lora-network-topology", animate=False),
                                         #html.Iframe(id='lora-network-topology', srcDoc=open('rome.html', 'r').read(), width='100%', height='400px'),
-                                        dl.Map([dl.TileLayer(),dl.LayerGroup(id='nodes-marker-layer'),dl.LayerGroup(id='gateway-marker-layer')], center=[41.90,12.49], zoom=10, style={'height': '45vh', 'margin-left':'20px', 'margin-right':'20px','width':'97%'}),
+                                        dl.Map([dl.TileLayer(),
+                                                dl.LayersControl([  dl.Overlay(dl.LayerGroup(id='nodes-marker-layer'), name='Nodes',checked=True),
+                                                                    dl.Overlay(dl.LayerGroup(id='gateway-marker-layer'), name='Gateways',checked=True)
+                                                ]),
+                                                dl.LayerGroup(id='coverage-circles')],
+
+                                                center=[41.90,12.49], zoom=10, style={'height': '45vh', 'margin-left':'20px', 'margin-right':'20px','width':'97%'}),
                                     ],
                                 ),
                             ]),
@@ -452,379 +468,6 @@ class ViewGui:
         #CALLBACKS
         ########################
 
-        # @self.app.callback(
-        #     [Output('confirm-dialog-app8', 'displayed'), Output('confirm-dialog-app8', 'message')],
-        #     [Input('legacy-device-num', 'value'), Input('E2L-device-num', 'value'),
-        #      Input('processing-function-dropdown', 'value'), Input('processing-window-dropdown', 'value')])
-        # def update_output(legacyDeviceNum, e2lDeviceNum, processingFunction, processingWindow):
-
-        #     controllerGRPC.legacy_device_num = legacyDeviceNum
-        #     controllerGRPC.E2L_device_num = e2lDeviceNum
-        #     controllerGRPC.process_function = processingFunction
-        #     controllerGRPC.process_window = processingWindow
-
-        #     messageDisplayString = 'Sent change command : ' + str(processingFunction)
-
-        #     return True, messageDisplayString
-
-
-        @self.app.callback(Output('lora-network-topology', 'figure'),
-                           Input('interval-component', 'n_intervals'))
-        def update_lora_topology_graph_live(n):
-            try:
-                ####NODE####
-                node_x = []
-                node_y = []
-                for node in self.G.nodes():
-                    x, y = self.G.nodes[node]['pos']
-                    node_x.append(x)
-                    node_y.append(y)
-
-
-                ####EDGE####
-                edge_x = []
-                edge_y = []
-                # print(self.G.edges())
-                for edge in self.G.edges():
-                    x0, y0 = self.G.nodes[edge[0]]['pos']
-                    x1, y1 = self.G.nodes[edge[1]]['pos']
-                    edge_x.append(x0)
-                    edge_x.append(x1)
-                    edge_x.append(None)
-                    edge_y.append(y0)
-                    edge_y.append(y1)
-                    edge_y.append(None)
-
-                edge_trace_E2LE = go.Scatter(
-                    x=edge_x[:12], y=edge_y[:12],
-                    name="Wireless link",
-                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color='darkgrey', width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
-
-                # print("view")
-                # print(controllerGRPC.ed_1_gw_selection_confirmed)
-
-                if controllerGRPC.ed_1_gw_selection_confirmed==2:
-                    colorEdgeEd_1_gw_1 = 'darkblue'
-                    colorEdgeEd_1_gw_2 = 'darkgrey'
-                    width_gw1 = 3
-                    width_gw2 = 0
-                elif controllerGRPC.ed_1_gw_selection_confirmed==1:
-                    colorEdgeEd_1_gw_1 = 'darkgrey'
-                    colorEdgeEd_1_gw_2 = 'darkblue'
-                    width_gw1 = 0
-                    width_gw2 = 3
-                else:
-                    colorEdgeEd_1_gw_1 = 'darkgrey'
-                    colorEdgeEd_1_gw_2 = 'darkgrey'
-                    width_gw1 = 0
-                    width_gw2 = 0
-                edge_trace_E2E1_GW1 = go.Scatter(
-                    x=edge_x[12:15], y=edge_y[12:15],
-                    # name="Wireless link",
-                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color=colorEdgeEd_1_gw_1, width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
-                edge_trace_E2E1_GW2 = go.Scatter(
-                    x=edge_x[15:18], y=edge_y[15:18],
-                    # name="Wireless link",
-                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color=colorEdgeEd_1_gw_2, width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
-                edge_trace_GW1_EDGE = go.Scatter(
-                    x=edge_x[39:42], y=edge_y[39:42],
-                    # name="Cloud",
-                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color=colorEdgeEd_1_gw_1, width=width_gw1)) # dash options include 'dash', 'dot', and 'dashdot'
-                edge_trace_GW2_EDGE = go.Scatter(
-                    x=edge_x[33:36], y=edge_y[33:36],
-                    # name="Cloud",
-                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color=colorEdgeEd_1_gw_2, width=width_gw2))  # dash options include 'dash', 'dot', and 'dashdot'
-
-                # if controllerGRPC.ed_2_gw_selection_confirmed==1:
-                #     colorEdgeEd_2_gw_1 = 'darkcyan'
-                #     colorEdgeEd_2_gw_2 = 'darkgrey'
-                # elif controllerGRPC.ed_2_gw_selection_confirmed==2:
-                #     colorEdgeEd_2_gw_1 = 'darkgrey'
-                #     colorEdgeEd_2_gw_2 = 'darkcyan'
-                # else:
-                if True:
-                    colorEdgeEd_2_gw_1 = 'darkgrey'
-                    colorEdgeEd_2_gw_2 = 'darkgrey'
-                edge_trace_E2E2_GW1 = go.Scatter(
-                    x=edge_x[18:21], y=edge_y[18:21],
-                    # name="Wireless link",
-                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color=colorEdgeEd_2_gw_1, width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
-                edge_trace_E2E2_GW2 = go.Scatter(
-                    x=edge_x[21:24], y=edge_y[21:24],
-                    # name="Wireless link",
-                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color=colorEdgeEd_2_gw_2, width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
-
-
-
-                # if controllerGRPC.ed_3_gw_selection_confirmed==1:
-                #     colorEdgeEd_3_gw_1 = 'darkgreen'
-                #     colorEdgeEd_3_gw_2 = 'darkgrey'
-                # elif controllerGRPC.ed_3_gw_selection_confirmed==2:
-                #     colorEdgeEd_3_gw_1 = 'darkgrey'
-                #     colorEdgeEd_3_gw_2 = 'darkgreen'
-                # else:
-                if True:
-                    colorEdgeEd_3_gw_1 = 'darkgrey'
-                    colorEdgeEd_3_gw_2 = 'darkgrey'
-                edge_trace_E2E3_GW1 = go.Scatter(
-                    x=edge_x[24:27], y=edge_y[24:27],
-                    # name="Wireless link",
-                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color=colorEdgeEd_3_gw_1, width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
-                edge_trace_E2E3_GW2 = go.Scatter(
-                    x=edge_x[27:30], y=edge_y[27:30],
-                    # name="Wireless link",
-                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color=colorEdgeEd_3_gw_2, width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
-
-                # edge_trace_E2LO = go.Scatter(
-                #     x=edge_x, y=edge_y,
-                #     # name="Edge link",
-                #     # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                #     line=dict(color='firebrick', width=2, dash='dash')) # dash options include 'dash', 'dot', and 'dashdot'
-                #
-
-                edge_trace_GW2_NS = go.Scatter(
-                    x=edge_x[30:33], y=edge_y[30:33],
-                    # name="Cloud",
-                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color='darkgray', width=2))  # dash options include 'dash', 'dot', and 'dashdot'
-
-                edge_trace_GW1_NS = go.Scatter(
-                    x=edge_x[36:39], y=edge_y[36:39],
-                    # name="Cloud",
-                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color='darkgrey', width=2)) # dash options include 'dash', 'dot', and 'dashdot'
-
-                edge_trace_NS_DS = go.Scatter(
-                    x=edge_x[42:45], y=edge_y[42:45],
-                    # name="Cloud",
-                    # line=dict(width=0.8, color='#888'), # hoverinfo='none', # mode='lines')
-                    line=dict(color='darkgrey', width=2)) # dash options include 'dash', 'dot', and 'dashdot'
-
-                node_trace_ED_legacy = go.Scatter(
-                    x=node_x[:2], y=node_y[:2],
-                    name='Legacy ED',
-                    mode='markers',
-                    # hoverinfo='text',
-                    marker=dict(
-                        showscale=False,
-                        # colorscale options
-                        # 'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
-                        # 'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
-                        # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
-                        colorscale='YlGnBu',
-                        reversescale=True,
-                        color='#FFFFD9',
-                        size=40,
-                        colorbar=dict(
-                            thickness=15,
-                            title='Node Connections',
-                            xanchor='left',
-                            titleside='right'
-                        ),
-                        line=dict( color='#434746', width=2, ),
-                        symbol="circle",
-                        ))
-
-                node_trace_EDL = go.Scatter(
-                    x=node_x[2:5], y=node_y[2:5],
-                    mode='markers',
-                    name='E2L ED',
-                    # hoverinfo='text',
-                    marker=dict(
-                        showscale=False,
-                        # colorscale options
-                        # 'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
-                        # 'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
-                        # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
-                        colorscale='YlGnBu',
-                        reversescale=False,
-                        color='#96D7BA',
-                        size=40,
-                        colorbar=dict(
-                            thickness=15,
-                            title='Node Connections',
-                            xanchor='left',
-                            titleside='right'
-                        ),
-                        symbol="star",
-                        line=dict( color='#434746', width=2, ),
-                    ))
-
-                node_trace_GW_1 = go.Scatter(
-                    x=node_x[5:6], y=node_y[5:6],
-                    mode='markers+text',
-                    name='E2L GW 1',
-                    hoverinfo='text',
-                    text="{},{}".format(controllerGRPC.gw_1_received_frame_num_sum, controllerGRPC.gw_1_transmitted_frame_num_sum),
-                    textposition="top right",
-                    textfont=dict(size=30, color='red'),
-                    marker=dict(
-                        showscale=False,
-                        # colorscale options
-                        # 'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
-                        # 'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
-                        # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
-                        colorscale='YlGnBu',
-                        reversescale=True,
-                        color='red',
-                        size=40,
-                        colorbar=dict(
-                            thickness=15,
-                            title='Node Connections',
-                            xanchor='left',
-                            titleside='right'
-                        ),
-                        symbol="triangle-up",
-                        line=dict(color="#434746", width=0, ),
-                    ))
-
-
-                node_trace_GW_2 = go.Scatter(
-                    x=node_x[6:7], y=node_y[6:7],
-                    mode='markers+text',
-                    name='E2L GW 2',
-                    hoverinfo='text',
-                    text="{},{}".format(controllerGRPC.gw_2_received_frame_num_sum, controllerGRPC.gw_2_transmitted_frame_num_sum),
-                    textposition="top right",
-                    textfont=dict(size=30, color='blue'),
-                    marker=dict(
-                        showscale=False,
-                        # colorscale options
-                        # 'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
-                        # 'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
-                        # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
-                        colorscale='YlGnBu',
-                        reversescale=True,
-                        color='blue',
-                        size=40,
-                        colorbar=dict(
-                            thickness=15,
-                            title='Node Connections',
-                            xanchor='left',
-                            titleside='right'
-                        ),
-                        symbol="triangle-up",
-                        # line=dict(color='MediumPurple', width=3, ),
-                    ))
-
-
-
-                node_trace_NS = go.Scatter(
-                    x=node_x[7:8], y=node_y[7:8],
-                    mode='markers+text',
-                    name='NS',
-                    hoverinfo='text',
-                    marker=dict(
-                        showscale=False,
-                        # colorscale options
-                        # 'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
-                        # 'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
-                        # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
-                        colorscale='YlGnBu',
-                        reversescale=True,
-                        color='#071D57',
-                        size=40,
-                        # colorbar=dict(
-                        #     thickness=15,
-                        #     title='Node Connections',
-                        #     xanchor='left',
-                        #     titleside='right'
-                        # ),
-                        symbol="square",
-                        line=dict(color='#434746', width=0, ),
-                    ))
-
-                node_trace_DS = go.Scatter(
-                    x=node_x[8:9], y=node_y[8:9],
-                    mode='markers',
-                    name='DS',
-                    hoverinfo='text',
-                    marker=dict(
-                        showscale=False,
-                        # colorscale options
-                        # 'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
-                        # 'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
-                        # 'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
-                        colorscale='Viridis',
-                        reversescale=False,
-                        color='#207FB7',
-                        size=40,
-                        colorbar=dict(
-                            thickness=15,
-                            title='Node Connections',
-                            xanchor='left',
-                            titleside='right'
-                        ),
-                        symbol="diamond",
-                        line=dict(color='#434746', width=0, ),
-                    ))
-
-                # node_adjacencies = []
-                # node_text = []
-                # for node, adjacencies in enumerate(self.G.adjacency()):
-                #     # node_adjacencies.append(len(adjacencies[1]))
-                #     node_text.append('# of connections: ' + str(len(adjacencies[1])))
-                #
-                # # node_trace_EDL.marker.color = node_adjacencies
-                # node_trace_EDL.text = node_text
-
-                fig = go.Figure(data=[edge_trace_E2LE,
-                                      edge_trace_E2E1_GW1, edge_trace_E2E1_GW2,
-                                      edge_trace_E2E2_GW1, edge_trace_E2E2_GW2,
-                                      edge_trace_E2E3_GW1, edge_trace_E2E3_GW2,
-                                      edge_trace_GW1_EDGE,
-                                      edge_trace_GW2_EDGE,
-                                      edge_trace_GW1_NS,
-                                      edge_trace_GW2_NS,
-                                      edge_trace_NS_DS,
-                                      node_trace_ED_legacy, node_trace_EDL,
-                                      node_trace_GW_1, node_trace_GW_2,
-                                      node_trace_NS, node_trace_DS,
-                                      ],
-                                layout=go.Layout(
-                                    showlegend=True,
-                                    hovermode='closest',
-                                    margin=dict(b=20, l=5, r=5, t=40),
-                                    xaxis=dict(showgrid=True, zeroline=False, showticklabels=False),
-                                    yaxis=dict(showgrid=True, zeroline=False, showticklabels=False))
-                                )
-
-                fig.update_layout(
-                    legend=dict( x=0.4, y=0.99, traceorder="normal", font=dict( family="sans-serif", size=12, color="blue" ), orientation='h',)
-                    # legend=dict(yanchor="top", y=0.01, xanchor="left", x=0.01 )
-                )
-
-                fig['data'][0]['showlegend'] = False
-                fig['data'][1]['showlegend'] = False
-                fig['data'][2]['showlegend'] = False
-                fig['data'][3]['showlegend'] = False
-                fig['data'][4]['showlegend'] = False
-                fig['data'][5]['showlegend'] = False
-                fig['data'][6]['showlegend'] = False
-                fig['data'][7]['showlegend'] = False
-                fig['data'][8]['showlegend'] = False
-                fig['data'][9]['showlegend'] = False
-                fig['data'][10]['showlegend'] = False
-                fig['data'][11]['showlegend'] = False
-
-                fig.update_layout( margin=dict(l=10, r=10, t=10, b=10), )
-
-
-                return fig
-
-            except Exception as e:
-                traceback.print_exc()
-            pass
-
 
 
         @self.app.callback([Output('nodes-marker-layer','children'), Output('gateway-marker-layer','children')],                           
@@ -832,14 +475,13 @@ class ViewGui:
         
         def update_markers_map(n):
             
-            gateway_icon = {
-                'iconUrl': self.app.get_asset_url("gateway-icon.png"),
-                'iconSize': [70,70],
-            }
+            
             nodes_markers = [dl.Marker(position=[device.lat,device.lon]) for device in controllerGRPC.devices_list]
-            gateways_markers = [dl.Marker(position=[gateway.lat,gateway.lon],icon=gateway_icon, children=dl.Popup(content=f"This gateways has id: {gateway.gw_id}")) for gateway in controllerGRPC.gateways_list]
-            return nodes_markers,gateways_markers
-        
+            
+
+
+            return nodes_markers,self.gateways_markers
+                
 
         @self.app.callback(Output('gateways-loads', 'figure'),
                            Input('interval-component', 'n_intervals'))
@@ -867,7 +509,38 @@ class ViewGui:
             fig.update_xaxes(showticklabels=True)
 
             return fig
+        
 
+        @self.app.callback(
+            Output('coverage-circles', 'children'),
+            [Input(marker.id, "n_clicks") for marker in self.gateways_markers]
+        )
+        def update_covering_circles(*args):
+            
+            if dash.callback_context.triggered[0]['value'] != None:
+                removed = False
+                marker_id = dash.callback_context.triggered[0]["prop_id"].split(".")[0]
+                
+                print("pressed gateway with id: ", marker_id)
+                #print(controllerGRPC.gateways_list)
+                
+                for dev in controllerGRPC.gateways_list:
+                    print(dash.callback_context.triggered[0]['value'])
+                            
+                    if dev.gw_id == marker_id:
+                        
+                        for circle in self.coverage_circles_markers:
+                            if circle.id == f"circle_{marker_id}":
+                                self.coverage_circles_markers.remove(circle)
+                                removed = True
+                                break
+
+                        if not removed:
+                            self.coverage_circles_markers.append(dl.Circle(center=[dev.lat, dev.lon], radius=dev.coverage*1000,id=f"circle_{marker_id}", color='blue', fill=True, fillOpacity=0.3))
+                            break
+                                   
+            return self.coverage_circles_markers
+        
 
 
         @self.app.callback(Output('gateways-statistics', 'figure'),

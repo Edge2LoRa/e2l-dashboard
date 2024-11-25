@@ -40,9 +40,9 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
         # print("SimpleMethodGWInfo called with message: %s" % (request) )
         # update the informations in the gateway server
         self.controllerGRPC.gateways_list = request.gateway_list
-
         self.controllerGRPC.gateways_stats_dataframe = self.controllerGRPC.gateways_stats_dataframe.iloc[0:0]
         
+
 
         for gw in self.controllerGRPC.gateways_list:
             
@@ -266,6 +266,8 @@ class ControllerGRPC():
         self.ed_2_gw_selection = 1
         self.ed_3_gw_selection = 1
 
+        
+
         self.start_key_agreement_process = 0
         self.start_key_agreement_process_old = 0
 
@@ -301,6 +303,9 @@ class ControllerGRPC():
         self.aggregation_function_result_last = 0
 
         self.gateways_list = []
+        for index, row in pd.read_csv("./gw-roma-50.csv").iterrows():
+            self.gateways_list.append(demo_pb2.Gateway_info(gw_id=str(int(row['GW_ID'])),lat=row['lat'],lon=row['lon'],rx_frame=0,tx_frame=0,processed_frame=0,memory=0,cpu=0,bandwidth_reduction=0,coverage=row['coverage']))
+
         self.devices_list = []
 
         self.gateways_stats_dataframe = pd.DataFrame(columns=['Gateway ID','lat','lon','RX_frame','TX_frame','processed_frame','mem','cpu','bandwidth_reduction'])
