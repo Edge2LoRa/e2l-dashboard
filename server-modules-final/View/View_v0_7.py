@@ -521,11 +521,9 @@ class ViewGui:
                 removed = False
                 marker_id = dash.callback_context.triggered[0]["prop_id"].split(".")[0]
                 
-                print("pressed gateway with id: ", marker_id)
-                #print(controllerGRPC.gateways_list)
                 
                 for dev in controllerGRPC.gateways_list:
-                    print(dash.callback_context.triggered[0]['value'])
+                    
                             
                     if dev.gw_id == marker_id:
                         
