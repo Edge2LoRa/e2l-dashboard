@@ -46,18 +46,20 @@ class SendStatistics(_message.Message):
     def __init__(self, client_id: _Optional[int] = ..., message_data: _Optional[str] = ..., gw_1_received_frame_num: _Optional[int] = ..., gw_1_transmitted_frame_num: _Optional[int] = ..., gw_2_received_frame_num: _Optional[int] = ..., gw_2_transmitted_frame_num: _Optional[int] = ..., ns_received_frame_frame_num: _Optional[int] = ..., ns_transmitted_frame_frame_num: _Optional[int] = ..., module_received_frame_frame_num: _Optional[int] = ..., aggregation_function_result: _Optional[int] = ...) -> None: ...
 
 class Device_info(_message.Message):
-    __slots__ = ("dev_id", "lat", "lon", "temperature", "humidity")
+    __slots__ = ("dev_id", "lat", "lon", "temperature", "humidity", "assigned_gw")
     DEV_ID_FIELD_NUMBER: _ClassVar[int]
     LAT_FIELD_NUMBER: _ClassVar[int]
     LON_FIELD_NUMBER: _ClassVar[int]
     TEMPERATURE_FIELD_NUMBER: _ClassVar[int]
     HUMIDITY_FIELD_NUMBER: _ClassVar[int]
+    ASSIGNED_GW_FIELD_NUMBER: _ClassVar[int]
     dev_id: str
     lat: float
     lon: float
     temperature: float
     humidity: float
-    def __init__(self, dev_id: _Optional[str] = ..., lat: _Optional[float] = ..., lon: _Optional[float] = ..., temperature: _Optional[float] = ..., humidity: _Optional[float] = ...) -> None: ...
+    assigned_gw: int
+    def __init__(self, dev_id: _Optional[str] = ..., lat: _Optional[float] = ..., lon: _Optional[float] = ..., temperature: _Optional[float] = ..., humidity: _Optional[float] = ..., assigned_gw: _Optional[int] = ...) -> None: ...
 
 class Device_info_list(_message.Message):
     __slots__ = ("device_list",)
@@ -66,7 +68,7 @@ class Device_info_list(_message.Message):
     def __init__(self, device_list: _Optional[_Iterable[_Union[Device_info, _Mapping]]] = ...) -> None: ...
 
 class Gateway_info(_message.Message):
-    __slots__ = ("gw_id", "lat", "lon", "rx_frame", "tx_frame", "processed_frame", "memory", "cpu", "bandwidth_reduction")
+    __slots__ = ("gw_id", "lat", "lon", "rx_frame", "tx_frame", "processed_frame", "memory", "cpu", "bandwidth_reduction", "coverage")
     GW_ID_FIELD_NUMBER: _ClassVar[int]
     LAT_FIELD_NUMBER: _ClassVar[int]
     LON_FIELD_NUMBER: _ClassVar[int]
@@ -76,6 +78,7 @@ class Gateway_info(_message.Message):
     MEMORY_FIELD_NUMBER: _ClassVar[int]
     CPU_FIELD_NUMBER: _ClassVar[int]
     BANDWIDTH_REDUCTION_FIELD_NUMBER: _ClassVar[int]
+    COVERAGE_FIELD_NUMBER: _ClassVar[int]
     gw_id: str
     lat: float
     lon: float
@@ -85,7 +88,8 @@ class Gateway_info(_message.Message):
     memory: float
     cpu: float
     bandwidth_reduction: int
-    def __init__(self, gw_id: _Optional[str] = ..., lat: _Optional[float] = ..., lon: _Optional[float] = ..., rx_frame: _Optional[int] = ..., tx_frame: _Optional[int] = ..., processed_frame: _Optional[int] = ..., memory: _Optional[float] = ..., cpu: _Optional[float] = ..., bandwidth_reduction: _Optional[int] = ...) -> None: ...
+    coverage: float
+    def __init__(self, gw_id: _Optional[str] = ..., lat: _Optional[float] = ..., lon: _Optional[float] = ..., rx_frame: _Optional[int] = ..., tx_frame: _Optional[int] = ..., processed_frame: _Optional[int] = ..., memory: _Optional[float] = ..., cpu: _Optional[float] = ..., bandwidth_reduction: _Optional[int] = ..., coverage: _Optional[float] = ...) -> None: ...
 
 class Gateway_info_list(_message.Message):
     __slots__ = ("gateway_list",)

@@ -82,8 +82,17 @@ class ViewGui:
                 'iconSize': [70,70],
             }
 
-        self.gateways_markers = [dl.Marker(position=[gateway.lat,gateway.lon],icon=self.gateway_icon, id=gateway.gw_id ,children=dl.Popup(content=f"This gateways has id: {gateway.gw_id}")) for gateway in controllerGRPC.gateways_list]
+        self.nodes_icons = []
+        for i in range(1,8):
+            self.nodes_icons.append({
+                'iconUrl': self.app.get_asset_url(f"markers/marker_{i}.png"),
+                'iconSize': [48,48]
+            })
+    
 
+
+        self.gateways_markers = [dl.Marker(position=[gateway.lat,gateway.lon],icon=self.gateway_icon, id=gateway.gw_id ,children=dl.Popup(content=f"This gateways has id: {gateway.gw_id}",autoClose=True,children=dl.Circle(center=[gateway.lat,gateway.lon],color="blue",radius=gateway.coverage*1000))) for gateway in controllerGRPC.gateways_list]
+        self.nodes_markers = []
         self.coverage_circles_markers = []
         
 
@@ -341,13 +350,19 @@ class ViewGui:
                                         # dcc.Graph(id="lora-network-topology", animate=False, style={"height": 650}, config={'displayModeBar': False}),
                                         # dcc.Graph(id="lora-network-topology", animate=False),
                                         #html.Iframe(id='lora-network-topology', srcDoc=open('rome.html', 'r').read(), width='100%', height='400px'),
-                                        dl.Map([dl.TileLayer(),
-                                                dl.LayersControl([  dl.Overlay(dl.LayerGroup(id='nodes-marker-layer'), name='Nodes',checked=True),
-                                                                    dl.Overlay(dl.LayerGroup(id='gateway-marker-layer'), name='Gateways',checked=True)
-                                                ]),
-                                                dl.LayerGroup(id='coverage-circles')],
-
-                                                center=[41.90,12.49], zoom=10, style={'height': '45vh', 'margin-left':'20px', 'margin-right':'20px','width':'97%'}),
+                                        dl.Map([
+                                            dl.TileLayer(),
+                                            dl.LayersControl([
+                                                dl.Overlay(
+                                                    dl.LayerGroup(id='nodes-marker-layer', children=self.nodes_markers), 
+                                                    name='Nodes', checked=True
+                                                ),
+                                                dl.Overlay(
+                                                    dl.LayerGroup(id='gateway-marker-layer', children=self.gateways_markers), 
+                                                    name='Gateways', checked=True
+                                                ),
+                                            ])],
+                                            center=[41.90,12.49], zoom=10, style={'height': '45vh', 'margin-left':'20px', 'margin-right':'20px','width':'97%'}),
                                     ],
                                 ),
                             ]),
@@ -474,13 +489,10 @@ class ViewGui:
                            [Input('interval-component', 'n_intervals')])
         
         def update_markers_map(n):
-            
-            
-            nodes_markers = [dl.Marker(position=[device.lat,device.lon]) for device in controllerGRPC.devices_list]
-            
+            self.nodes_markers = [dl.Marker(position=[device.lat,device.lon], icon=self.nodes_icons[controllerGRPC.gateway_color_dict[device.assigned_gw]]) for device in controllerGRPC.devices_list]
+            self.gateways_markers = [dl.Marker(position=[gateway.lat,gateway.lon],icon=self.gateway_icon, id=gateway.gw_id ,children=dl.Popup(content=f"This gateways has id: {gateway.gw_id}",autoClose=True,children=dl.Circle(center=[gateway.lat,gateway.lon],color="blue",radius=gateway.coverage*1000))) for gateway in controllerGRPC.gateways_list]
 
-
-            return nodes_markers,self.gateways_markers
+            return self.nodes_markers, self.gateways_markers
                 
 
         @self.app.callback(Output('gateways-loads', 'figure'),
@@ -511,33 +523,33 @@ class ViewGui:
             return fig
         
 
-        @self.app.callback(
-            Output('coverage-circles', 'children'),
-            [Input(marker.id, "n_clicks") for marker in self.gateways_markers]
-        )
-        def update_covering_circles(*args):
+        # @self.app.callback(
+        #     Output('coverage-circles', 'children'),
+        #     [Input(marker.id, "n_clicks") for marker in self.gateways_markers]
+        # )
+        # def update_covering_circles(*args):
             
-            if dash.callback_context.triggered[0]['value'] != None:
-                removed = False
-                marker_id = dash.callback_context.triggered[0]["prop_id"].split(".")[0]
+        #     if dash.callback_context.triggered[0]['value'] != None:
+        #         removed = False
+        #         marker_id = dash.callback_context.triggered[0]["prop_id"].split(".")[0]
                 
                 
-                for dev in controllerGRPC.gateways_list:
+        #         for dev in controllerGRPC.gateways_list:
                     
                             
-                    if dev.gw_id == marker_id:
+        #             if dev.gw_id == marker_id:
                         
-                        for circle in self.coverage_circles_markers:
-                            if circle.id == f"circle_{marker_id}":
-                                self.coverage_circles_markers.remove(circle)
-                                removed = True
-                                break
+        #                 for circle in self.coverage_circles_markers:
+        #                     if circle.id == f"circle_{marker_id}":
+        #                         self.coverage_circles_markers.remove(circle)
+        #                         removed = True
+        #                         break
 
-                        if not removed:
-                            self.coverage_circles_markers.append(dl.Circle(center=[dev.lat, dev.lon], radius=dev.coverage*1000,id=f"circle_{marker_id}", color='blue', fill=True, fillOpacity=0.3))
-                            break
+        #                 if not removed:
+        #                     self.coverage_circles_markers.append(dl.Circle(center=[dev.lat, dev.lon], radius=dev.coverage*1000,id=f"circle_{marker_id}", color='blue', fill=True, fillOpacity=0.3))
+        #                     break
                                    
-            return self.coverage_circles_markers
+        #     return self.coverage_circles_markers
         
 
 
@@ -579,120 +591,6 @@ class ViewGui:
 
             return fig
 
-           
-
-
-            
-
-        @self.app.callback([Output('lora-traffic-graph', 'figure'), Output('aggregation_result_id', 'children')],
-                           [Input('interval-component', 'n_intervals')])
-        def update_lora_traffic_graph_live(n):
-
-            # print("Update graph : ", controllerGRPC.gw_1_received_frame_num)
-
-            try:
-                # Prepare figure
-                fig = make_subplots(
-                    rows=2, cols=1,
-                    shared_xaxes=True,
-                    vertical_spacing=0.09,
-                )
-
-                ble_plot_colors = ["red", "blue", "black", "green", "orange"]
-                # print(list(controllerGRPC.legacy_gw_received_frame_num))
-                # print(list(controllerGRPC.E2L_gw_received_frame_num))
-
-                gw_1_received_frame_num = list(controllerGRPC.gw_1_received_frame_num)
-                gw_1_transmitted_frame_num = list(controllerGRPC.gw_1_transmitted_frame_num)
-                gw_2_received_frame_num = list(controllerGRPC.gw_2_received_frame_num)
-                gw_2_transmitted_frame_num = list(controllerGRPC.gw_2_transmitted_frame_num)
-                module_received_frame_frame_num = list(controllerGRPC.module_received_frame_frame_num)
-
-                timetsamp_list = list(range(len(gw_1_received_frame_num)))
-
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_1_received_frame_num,
-                                        mode='lines+markers', line=dict(color=ble_plot_colors[0], dash = 'dash'), name="RX_GW1",
-                                        marker = dict(symbol="circle-open", size=12),
-                                        ), row=1, col=1,
-                              )
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_1_transmitted_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[0], dash = 'dash'),  name="TX_GW1",
-                                         marker=dict(symbol="triangle-up", size=12),
-                                         ), row=1, col=1,
-                              )
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_2_received_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[1], dash = 'dash'), name="RX_GW2",
-                                         marker = dict(symbol="circle-open", size=12),
-                                        ), row=1, col=1,
-                              )
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=gw_2_transmitted_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[1], dash = 'dash'), name="TX_GW2",
-                                         marker = dict(symbol="triangle-up", size=12),
-                                        ), row=1, col=1,
-                              )
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=module_received_frame_frame_num,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[2]), name="RX_DM",
-                                         marker = dict(symbol="circle", size=12),
-                                        ), row=1, col=1,
-                              )
-
-                # ns_received_frame_frame_num = list(controllerGRPC.ns_received_frame_frame_num)
-                # ns_transmitted_frame_frame_num = list(controllerGRPC.ns_transmitted_frame_frame_num)
-                #
-                # fig.add_trace(go.Scatter(x=timetsamp_list, y=ns_received_frame_frame_num,
-                #                          mode='lines+markers', line=dict(color=ble_plot_colors[0]), name="RX_NS"
-                #                          ), row=2, col=1,
-                #               )
-                # fig.add_trace(go.Scatter(x=timetsamp_list, y=ns_transmitted_frame_frame_num,
-                #                          mode='lines+markers', line=dict(color=ble_plot_colors[1]), name="TX_NS"
-                #                          ), row=2, col=1,
-                #               )
-
-                stream_reduction = list(controllerGRPC.reduction_frame_num)
-                fig.add_trace(go.Scatter(x=timetsamp_list, y=stream_reduction,
-                                         mode='lines+markers', line=dict(color=ble_plot_colors[3], dash='dot', ), name="Stream redcution"
-                                         ), row=2, col=1,
-                              )
-
-                fig.update_yaxes(row=1, col=1, title_text='Number of Frames', range=[-0.3, 6])
-                fig.update_yaxes(row=2, col=1, title_text='Stream Frame Reduction [%]', range=[0, 100])
-                fig.update_layout( margin=dict(l=10, r=10, t=10, b=10), )
-
-                fig.update_layout(legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01 ))
-                # print("end update")
-                return fig, str(controllerGRPC.aggregation_function_result[-1])
-
-            except Exception as e:
-                print("exception triggered")
-                traceback.print_exc()
-                pass
-
-        @self.app.callback(
-            Output('boolean-slider-output-1', 'children'),
-            Input('ed-1-gw-selection', 'value')
-        )
-        def update_output_ed1(selection):
-            controllerGRPC.ed_1_gw_selection=selection
-            # return f'The slider is {selection}.'
-            return f''
-
-        @self.app.callback(
-            Output('boolean-slider-output-2', 'children'),
-            Input('ed-2-gw-selection', 'value')
-        )
-        def update_output_ed2(selection):
-            controllerGRPC.ed_2_gw_selection=selection
-            # return f'The slider is {selection}.'
-            return f''
-
-        @self.app.callback(
-            Output('boolean-slider-output-3', 'children'),
-            Input('ed-3-gw-selection', 'value')
-        )
-        def update_output_ed3(selection):
-            controllerGRPC.ed_3_gw_selection=selection
-            # return f'The slider is {selection}.'
-            return f''
 
         # @self.app.callback(
         #     Output('updateScenarioConfigurationDiv', 'children'),
@@ -738,43 +636,3 @@ class ViewGui:
             controllerGRPC.assining_policy = policy
             controllerGRPC.refreshing_table_rate = rate
             return ''
-
-        @self.app.callback(
-            [Output("session", "data"),
-             Output('textarea-log-devices', 'children'),
-             Output('textarea-log-gateways', 'children'),
-             Output('textarea-log-distributed', 'children')],
-            [Input('interval-component', 'n_intervals')],
-            State("session", "data"),
-            # prevent_initial_call=True,
-        )
-        def update_text_input(n, data):
-            try:
-                if True: #controllerGRPC.gw1_key_agreement_message_log_updated or \
-                        #controllerGRPC.gw2_key_agreement_message_log_updated or controllerGRPC.device_key_agreement_message_updated:
-
-                    # controllerGRPC.gw1_key_agreement_message_log_updated = 0
-                    # controllerGRPC.gw2_key_agreement_message_log_updated = 0
-                    # controllerGRPC.device_key_agreement_message_updated = 0
-
-                    html_return_content_gw1 = []
-                    for ii in range(len(controllerGRPC.key_agreement_message_log_gw1)-1,0,-1):
-                        html_return_content_gw1.append(html.Div(controllerGRPC.key_agreement_message_log_gw1[ii], style={"font-weight": "bold"}))
-
-                    html_return_content_gw2 = []
-                    for ii in range(len(controllerGRPC.key_agreement_message_log_gw2)-1,0,-1):
-                        html_return_content_gw2.append(html.Div(controllerGRPC.key_agreement_message_log_gw2[ii], style={"font-weight": "bold"}))
-                        # html_return_content.append(html.P("[{}] ".format("AUDIO MESSAGE"), style={"font-weight": "bold", "color":"red"}))
-                        # html_return_content_gw.append(html.Br())
-
-                    html_return_content_device = []
-                    for ii in range(len(controllerGRPC.key_agreement_message_log_ed)-1,0,-1):
-                        html_return_content_device.append(html.Div(controllerGRPC.key_agreement_message_log_ed[ii], style={"font-weight": "bold"}))
-
-                return data, html.Div(html_return_content_gw1), html.Div(html_return_content_gw2), html.Div(html_return_content_device)
-
-            except Exception as e:
-                traceback.print_exc()
-                pass
-
-            return data, "test1", "test2", "test3"

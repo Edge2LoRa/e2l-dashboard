@@ -301,10 +301,15 @@ class ControllerGRPC():
 
 
         self.aggregation_function_result_last = 0
-
+        self.gateway_color_dict = {}
         self.gateways_list = []
         for index, row in pd.read_csv("./gw-roma-50.csv").iterrows():
+            
             self.gateways_list.append(demo_pb2.Gateway_info(gw_id=str(int(row['GW_ID'])),lat=row['lat'],lon=row['lon'],rx_frame=0,tx_frame=0,processed_frame=0,memory=0,cpu=0,bandwidth_reduction=0,coverage=row['coverage']))
+            self.gateway_color_dict[int(row['GW_ID'])] = int(row['color'])
+            
+        
+
 
         self.devices_list = []
 
