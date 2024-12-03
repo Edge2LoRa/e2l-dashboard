@@ -35,6 +35,7 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
     def __init__(self, controllerGRPC):
         self.demoServerId = 0
         self.controllerGRPC = controllerGRPC
+        
 
     def SimpleMethodGWInfo(self, request, context):
         # print("SimpleMethodGWInfo called with message: %s" % (request) )
@@ -46,7 +47,7 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
 
         for gw in self.controllerGRPC.gateways_list:
             
-            self.controllerGRPC.gateways_stats_dataframe = self.controllerGRPC.gateways_stats_dataframe._append({'Gateway ID': gw.gw_id, 'lat': gw.lat, 'lon': gw.lon, 'RX_frame': gw.rx_frame, 'TX_frame': gw.tx_frame, 'processed_frame':gw.processed_frame,'mem': gw.memory, 'cpu': gw.cpu, 'bandwidth_reduction': gw.bandwidth_reduction}, ignore_index=True)
+            self.controllerGRPC.gateways_stats_dataframe = self.controllerGRPC.gateways_stats_dataframe._append({'Gateway ID': gw.gw_id, 'lat': gw.lat, 'lon': gw.lon, 'RX_frame': gw.rx_frame, 'TX_frame': gw.tx_frame, "FWD_frame":gw.fwd_frames,'processed_frame':gw.processed_frame,'mem': gw.memory, 'cpu': gw.cpu, 'bandwidth_reduction': gw.bandwidth_reduction}, ignore_index=True)
 
         #print(self.controllerGRPC.gateways_stats_dataframe)
         response = demo_pb2.ReplyInfoGwList(
@@ -145,6 +146,8 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
             print(request.ns_transmitted_frame_frame_num)
             print(request.module_received_frame_frame_num)
             print(request.aggregation_function_result)
+            print(f"current snapshot is: {request.current_snapshot}")
+            self.controllerGRPC.snapshot_hour = request.current_snapshot
 
             print(self.controllerGRPC.gw_1_received_frame_num)
             self.controllerGRPC.gw_1_received_frame_num.append(request.gw_1_received_frame_num - self.controllerGRPC.gw_1_received_frame_num_last)
@@ -196,6 +199,8 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
             scenario = self.controllerGRPC.scenario,
             assining_policy = self.controllerGRPC.assining_policy,
             refreshing_table_rate = self.controllerGRPC.refreshing_table_rate,
+            refresh_rate = self.controllerGRPC.refresh_rate,
+            current_snapshot_hour = self.controllerGRPC.snapshot_position
 
         )
 
@@ -266,8 +271,8 @@ class ControllerGRPC():
         self.ed_2_gw_selection = 1
         self.ed_3_gw_selection = 1
 
+        self.refresh_rate = 5
         
-
         self.start_key_agreement_process = 0
         self.start_key_agreement_process_old = 0
 
@@ -277,6 +282,9 @@ class ControllerGRPC():
         self.scenario = "Moving cluster"
         self.assining_policy = "Random"
         self.refreshing_table_rate = 1
+        self.snapshot_position = 0
+        self.snapshot_hour=0
+        
 
         self.change_processing_configuraiton_old = 0
          
@@ -304,7 +312,7 @@ class ControllerGRPC():
         self.gateway_color_dict = {}
         self.gateways_list = []
         for index, row in pd.read_csv("./gw-roma-50.csv").iterrows():
-            
+
             self.gateways_list.append(demo_pb2.Gateway_info(gw_id=str(int(row['GW_ID'])),lat=row['lat'],lon=row['lon'],rx_frame=0,tx_frame=0,processed_frame=0,memory=0,cpu=0,bandwidth_reduction=0,coverage=row['coverage']))
             self.gateway_color_dict[int(row['GW_ID'])] = int(row['color'])
             
@@ -313,7 +321,7 @@ class ControllerGRPC():
 
         self.devices_list = []
 
-        self.gateways_stats_dataframe = pd.DataFrame(columns=['Gateway ID','lat','lon','RX_frame','TX_frame','processed_frame','mem','cpu','bandwidth_reduction'])
+        self.gateways_stats_dataframe = pd.DataFrame(columns=['Gateway ID','lat','lon','RX_frame','TX_frame','FWD_frame','processed_frame','mem','cpu','bandwidth_reduction'])
 
 
         self.gw_1_received_frame_num = collections.deque(maxlen=20)

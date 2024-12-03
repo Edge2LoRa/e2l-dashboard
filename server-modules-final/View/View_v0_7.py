@@ -158,12 +158,6 @@ class ViewGui:
                             id="plotly-image-unipa",
                             style={
                                 "height": "80px", "width": "auto", "margin-bottom": "1px", 'display': 'inline-block', 'text-align': 'center'},
-                        ),
-                        html.Img(
-                            src=self.app.get_asset_url("logo_unidata.png"),
-                            id="plotly-image-unidata",
-                            style={
-                                "height": "80px", "width": "auto", "margin-bottom": "1px", 'display': 'inline-block', 'text-align': 'center'},
                         )
                     ],
                     className="one-third column",
@@ -176,10 +170,10 @@ class ViewGui:
                         html.Div(
                             [
                                 html.H3(
-                                    "Enabling Edge processing on LoRaWAN architecture",
+                                    "Enhancing LoRaWAN Networks with Edge Computing",
                                     style={"margin-bottom": "0px"},
                                 ),
-                                html.H5("Stefano Milani, Domenico Garlisi, Matteo Di Fraia, Patrizio Pisani, Ioannis Chatzigiannakis", style={"margin-top": "0px"}
+                                html.H5("Lorenzo Frangella, Stefano Milani, Domenico Garlisi, Ioannis Chatzigiannakis", style={"margin-top": "0px"}
                                 ),
                             ]
                         )
@@ -236,6 +230,8 @@ class ViewGui:
                 dbc.Row(
                     [
                         html.Div([
+                            html.P("CURRENT SNAPSHOT: ",id="current-snapshot-visualization"),
+
                             html.P('SCENARIO CONFIGURATION', style={'margin-top': '18px', 'margin-bottom': '4px'}, className='font-weight-bold'),
 
                             html.Label('Select the scenario to use'),
@@ -249,20 +245,6 @@ class ViewGui:
                             ),
                             html.Div(id='updateScenarioConfigurationDiv'),
                             
-                            # html.Div([
-                            #     html.Label('E2ED 1 GW selection'),
-                            #     dcc.Slider(1, 2, 1, value=self.ed_1_gw_selection, id='ed-1-gw-selection'),
-                            # ]),
-
-                            # html.Div([
-                            #     html.Label('E2ED 2 GW selection'),
-                            #     dcc.Slider(1, 2, 1, value=self.ed_2_gw_selection, id='ed-2-gw-selection'),
-                            # ]),
-
-                            # html.Div([
-                            #     html.Label('E2ED 3 GW selection'),
-                            #     dcc.Slider(1, 2, 1, value=self.ed_3_gw_selection, id='ed-3-gw-selection'),
-                            # ]),
                             html.Hr(),
                             html.P('ASSIGNMENT CONFIGURATION', style={'margin-top': '18px', 'margin-bottom': '4px'}, className='font-weight-bold'),
 
@@ -306,12 +288,24 @@ class ViewGui:
                                 value=self.processingWindows[0]
                             ),
 
+                            html.P('EMULATION SPEED CONFIGURATION', style={'margin-top': '18px', 'margin-bottom': '4px'}, className='font-weight-bold'),
+
+                            html.Label('Select Update Speed (seconds)'),
+                            dcc.Input(id="UpdateRefreshRate", type="number", placeholder="Update Table Rate", value=5, min=5, max=1000, step=1),
+                            html.P('SELECT EMULATION NEXT FRAME:'),
+                            dcc.Input(id='UpdateSnapshot',type="number",value=0, min=0, max=99, step=1),
+                            html.Hr(),
+
                             html.Button('Update configuration', id='updateProcessingConfigurationButton',  n_clicks=0,
                                         style={'margin-top': '16px'},
                                         className='bg-dark text-white'),
+                            
+                            
                             # html.Button('Update processing configuration', id='updateProcessingConfigurationButton', style={'text-align': 'center', 'vertical-align': 'middle', }),
                             html.Div(id='updateProcessingConfigurationDiv'),
                             
+                            
+    
 
                             # html.Label('AGGREGATION RESULT'),
                             # dcc.Markdown(children="0", id='aggregation_result_id', style={'margin-top': '6px', 'text-align': 'center', 'vertical-align': 'middle'},
@@ -483,7 +477,19 @@ class ViewGui:
         #CALLBACKS
         ########################
 
+        @self.app.callback(Output('current-snapshot-visualization','children'),[Input('interval-component','n_intervals')])
 
+        def update_clock(_):
+            minutes = controllerGRPC.snapshot_hour*5
+            minutes = minutes % 60
+            hour = controllerGRPC.snapshot_hour*5
+            hour = hour // 60
+
+            if minutes< 10:
+                minutes ='0'+str(minutes)
+            if hour<10:
+                hour = '0'+str(hour)
+            return f"CURRENT SNAPSHOT HOUR: {hour}:{minutes}"
 
         @self.app.callback([Output('nodes-marker-layer','children'), Output('gateway-marker-layer','children')],                           
                            [Input('interval-component', 'n_intervals')])
@@ -522,36 +528,7 @@ class ViewGui:
 
             return fig
         
-
-        # @self.app.callback(
-        #     Output('coverage-circles', 'children'),
-        #     [Input(marker.id, "n_clicks") for marker in self.gateways_markers]
-        # )
-        # def update_covering_circles(*args):
-            
-        #     if dash.callback_context.triggered[0]['value'] != None:
-        #         removed = False
-        #         marker_id = dash.callback_context.triggered[0]["prop_id"].split(".")[0]
-                
-                
-        #         for dev in controllerGRPC.gateways_list:
-                    
-                            
-        #             if dev.gw_id == marker_id:
-                        
-        #                 for circle in self.coverage_circles_markers:
-        #                     if circle.id == f"circle_{marker_id}":
-        #                         self.coverage_circles_markers.remove(circle)
-        #                         removed = True
-        #                         break
-
-        #                 if not removed:
-        #                     self.coverage_circles_markers.append(dl.Circle(center=[dev.lat, dev.lon], radius=dev.coverage*1000,id=f"circle_{marker_id}", color='blue', fill=True, fillOpacity=0.3))
-        #                     break
-                                   
-        #     return self.coverage_circles_markers
         
-
 
         @self.app.callback(Output('gateways-statistics', 'figure'),
                            Input('interval-component', 'n_intervals'))
@@ -581,8 +558,14 @@ class ViewGui:
                 name = 'Processed_frame',
                 marker=dict(color='green')
             )
+            bar_trace_forwarded = go.Bar(
+                x = controllerGRPC.gateways_stats_dataframe['Gateway ID'],
+                y = controllerGRPC.gateways_stats_dataframe['FWD_frame'],
+                name = 'Forwarded_frame',
+                marker=dict(color='orange')
+            )
 
-            fig = go.Figure(data =[bar_trace_rx, bar_trace_tx, bar_trace_processed])
+            fig = go.Figure(data =[bar_trace_rx, bar_trace_tx, bar_trace_processed, bar_trace_forwarded])
 
 
 
@@ -592,25 +575,18 @@ class ViewGui:
             return fig
 
 
-        # @self.app.callback(
-        #     Output('updateScenarioConfigurationDiv', 'children'),
-        #     Input('updateScenarioConfigurationButton', 'n_clicks'),
-        #     prevent_initial_call=True
-        # )
-        # def update_output(n_clicks):
-        #     controllerGRPC.start_key_agreement_process = 1
-        #     # return 'the button has been clicked {} times'.format(n_clicks)
-        #     return ''
 
         @self.app.callback(
             Output('updateProcessingConfigurationDiv', 'children'),
             [Input('updateProcessingConfigurationButton', 'n_clicks'),
-             Input('processing-function-dropdown', 'value'), Input('processing-window-dropdown', 'value')],
+             Input('processing-function-dropdown', 'value'), Input('processing-window-dropdown', 'value'),Input('UpdateRefreshRate', 'value'),Input('UpdateSnapshot','value')],
             prevent_initial_call=True
         )
-        def update_output(n_clicks,processingFunction, processingWindow):
+        def update_output(n_clicks,processingFunction, processingWindow,refreshRate,snapshot_position):
+            controllerGRPC.refresh_rate = refreshRate
             controllerGRPC.change_processing_configuraiton = 1
             controllerGRPC.process_function = processingFunction
+            controllerGRPC.snapshot_position = snapshot_position
             if processingWindow is not None :
                 controllerGRPC.process_window = int(processingWindow)
             else: 
