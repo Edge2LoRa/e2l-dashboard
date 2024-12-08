@@ -106,7 +106,7 @@ class ViewGui:
         self.dropdown_process_function = "mean"
         self.dropdown_process_window = 2
 
-        self.app.title = "EDGE2LORA DEMO (MOBICOM 2023)"
+        self.app.title = "EDGE2LORA DEMO (EWSN24)"
 
         self.processingFunctions = ["Mean and Variance", "Hampel Filter"]
         self.scenarios = ["Moving cluster", "Taxi simulation"]
@@ -230,7 +230,7 @@ class ViewGui:
                 dbc.Row(
                     [
                         html.Div([
-                            html.P("CURRENT SNAPSHOT: ",id="current-snapshot-visualization"),
+                            html.H4("CURRENT TIME: ",id="current-snapshot-visualization"),
 
                             html.P('SCENARIO CONFIGURATION', style={'margin-top': '18px', 'margin-bottom': '4px'}, className='font-weight-bold'),
 
@@ -259,6 +259,8 @@ class ViewGui:
                             ),
                             dcc.Input(id="UpdateTableRate", type="number", placeholder="Update Table Rate", value=self.update_table_rate, min=1, max=1000, step=1),
                             html.Div(id='updatePolicyConfigurationDiv'),
+                            html.Div(id='updateFunctionConfigurationDiv'),
+                            html.Div(id='updateSnapshotConfigurationDiv'),
                             html.Hr(),
 
                             # html.Div(id='output-container-button-app12', children='',
@@ -278,15 +280,7 @@ class ViewGui:
                                 value=self.processingFunctions[0]
                             ),
 
-                            html.Label('Select the windows size'),
-                            dcc.Dropdown(
-                                id='processing-window-dropdown',
-                                options=[
-                                    {'label': '{}'.format(self.processingWindows[index]),
-                                     'value': '{}'.format(self.processingWindows[index])} for index in range(len(self.processingWindows))
-                                ],
-                                value=self.processingWindows[0]
-                            ),
+                            
 
                             html.P('EMULATION SPEED CONFIGURATION', style={'margin-top': '18px', 'margin-bottom': '4px'}, className='font-weight-bold'),
 
@@ -489,7 +483,7 @@ class ViewGui:
                 minutes ='0'+str(minutes)
             if hour<10:
                 hour = '0'+str(hour)
-            return f"CURRENT SNAPSHOT HOUR: {hour}:{minutes}"
+            return f"CURRENT TIME: {hour}:{minutes}"
 
         @self.app.callback([Output('nodes-marker-layer','children'), Output('gateway-marker-layer','children')],                           
                            [Input('interval-component', 'n_intervals')])
@@ -583,9 +577,11 @@ class ViewGui:
             prevent_initial_call=True
         )
         def update_output(n_clicks,processingFunction, processingWindow,refreshRate,snapshot_position):
+            for i in range(100):
+                print(processingFunction)
             controllerGRPC.refresh_rate = refreshRate
             controllerGRPC.change_processing_configuraiton = 1
-            controllerGRPC.process_function = processingFunction
+            controllerGRPC.process_function = "mean"
             controllerGRPC.snapshot_position = snapshot_position
             if processingWindow is not None :
                 controllerGRPC.process_window = int(processingWindow)
@@ -593,6 +589,7 @@ class ViewGui:
                 controllerGRPC.process_window = 10
             # return 'the button has been clicked {} times'.format(n_clicks)
             return ''
+        
 
         @self.app.callback(
                 Output('updateScenarioConfigurationDiv', 'children'),
@@ -611,4 +608,22 @@ class ViewGui:
         def update_policy_configuration(policy,rate):
             controllerGRPC.assining_policy = policy
             controllerGRPC.refreshing_table_rate = rate
+            return ''
+        
+        @self.app.callback(
+            Output('updateFunctionConfigurationDiv', 'children'),
+            [Input('processing-function-dropdown', 'value')],
+            prevent_initial_call=True
+        )
+        def update_processing_function(processing_function):
+            controllerGRPC.process_function = processing_function
+            return ''
+        
+        @self.app.callback(
+            Output('updateSnapshotConfigurationDiv', 'children'),
+            [Input('UpdateSnapshot','value')],
+            prevent_initial_call=True
+        )
+        def update_snapshot_hour(snapshot_value):
+            controllerGRPC.snapshot_position = snapshot_value
             return ''

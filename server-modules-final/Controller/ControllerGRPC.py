@@ -148,6 +148,8 @@ class DemoServer(demo_pb2_grpc.GRPCDemoServicer):
             print(request.aggregation_function_result)
             print(f"current snapshot is: {request.current_snapshot}")
             self.controllerGRPC.snapshot_hour = request.current_snapshot
+            
+
 
             print(self.controllerGRPC.gw_1_received_frame_num)
             self.controllerGRPC.gw_1_received_frame_num.append(request.gw_1_received_frame_num - self.controllerGRPC.gw_1_received_frame_num_last)
